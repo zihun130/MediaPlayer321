@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MotionEvent;
 
 public class WelcomeActivity extends AppCompatActivity {
 
@@ -23,6 +24,13 @@ public class WelcomeActivity extends AppCompatActivity {
 
     private void startMainActivity() {
         startActivity(new Intent(WelcomeActivity.this,MainActivity.class));
+        finish();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        startMainActivity();
+        return super.onTouchEvent(event);
     }
 
     @Override
