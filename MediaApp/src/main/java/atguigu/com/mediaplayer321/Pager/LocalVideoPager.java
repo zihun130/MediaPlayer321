@@ -96,7 +96,7 @@ public class LocalVideoPager extends BaseFragment implements AdapterView.OnItemC
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         MediaItem item = (MediaItem) adapter.getItem(position);
-        Intent intent=new Intent(context,SystemViewPlayer.class);
+        Intent intent=new Intent(context,SystemView.class);
         intent.setDataAndType(Uri.parse(item.getData()),"video/*");
         startActivity(intent);
     }

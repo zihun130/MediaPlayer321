@@ -3,23 +3,22 @@ package atguigu.com.mediaplayer321.Pager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.MediaController;
 import android.widget.Toast;
 import android.widget.VideoView;
 
 import atguigu.com.mediaplayer321.R;
 
-/**
- * Created by sun on 2017/5/19.
- */
-public class SystemViewPlayer extends AppCompatActivity{
+public class SystemView extends AppCompatActivity {
+
     private VideoView vv;
     private Uri uri;
+
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.systemviewplayer);
+        setContentView(R.layout.activity_system_view);
         vv = (VideoView)findViewById(R.id.vv);
 
         uri = getIntent().getData();
@@ -34,7 +33,7 @@ public class SystemViewPlayer extends AppCompatActivity{
         vv.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                Toast.makeText(SystemViewPlayer.this, "播放出错了！！", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SystemView.this, "播放出错了！！", Toast.LENGTH_SHORT).show();
                 return false;
             }
         });
@@ -46,7 +45,7 @@ public class SystemViewPlayer extends AppCompatActivity{
             }
         });
 
-      vv.setVideoURI(uri);
-
+        vv.setVideoURI(uri);
+        vv.setMediaController(new MediaController(this,true));
     }
 }
