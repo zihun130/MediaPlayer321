@@ -1,6 +1,7 @@
 package atguigu.com.mediaplayer321.Pager;
 
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
@@ -95,6 +96,9 @@ public class LocalVideoPager extends BaseFragment implements AdapterView.OnItemC
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         MediaItem item = (MediaItem) adapter.getItem(position);
+        Intent intent=new Intent(context,SystemViewPlayer.class);
+        intent.setDataAndType(Uri.parse(item.getData()),"video/*");
+        startActivity(intent);
     }
 
 }
