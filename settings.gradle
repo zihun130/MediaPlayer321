@@ -1,1 +1,1 @@
-include ':MediaApp', ':Media000', ':Media001'
+include ':MediaApp', ':Media000', ':Media001', ':Media002'
