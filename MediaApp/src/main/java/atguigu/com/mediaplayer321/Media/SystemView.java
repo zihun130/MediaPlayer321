@@ -20,9 +20,11 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import atguigu.com.mediaplayer321.R;
+import atguigu.com.mediaplayer321.domain.MediaItem;
 import atguigu.com.mediaplayer321.utils.Utils;
 
 public class SystemView extends AppCompatActivity implements View.OnClickListener {
@@ -31,7 +33,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
     private Uri uri;
     private Utils utils;
     private MyBroadCastReceiver receiver;
-
+    private ArrayList<MediaItem> mediaItems;
 
     private LinearLayout llTop;
     private TextView tvName;
@@ -50,6 +52,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
     private Button btnNext;
     private Button btnSwitchScreen;
     private static final int PROGRESS=0;
+    private int position;
 
     /**
      * Find the Views in the layout<br />
@@ -97,9 +100,9 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
         } else if ( v == btnSwitchPlayer ) {
             // Handle clicks for btnSwitchPlayer
         } else if ( v == btnExit ) {
-            // Handle clicks for btnExit
+           finish();
         } else if ( v == btnPre ) {
-            // Handle clicks for btnPre
+            setPrevideo();
         } else if ( v == btnStartPause ) {
             if(vv.isPlaying()){
                 vv.pause();
@@ -109,7 +112,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
                 btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
             }
         } else if ( v == btnNext ) {
-            // Handle clicks for btnNext
+           setNextvideo();
         } else if ( v == btnSwitchScreen ) {
             // Handle clicks for btnSwitchScreen
         }
@@ -127,15 +130,88 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
         initData();
         findViews();
 
-        uri = getIntent().getData();
+        getData();
+        setData();
 
         setListener();
 
-        vv.setVideoURI(uri);
+
     }
 
+    private void getData() {
+        uri = getIntent().getData();
+        mediaItems = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videoList");
+        position=getIntent().getIntExtra("position",0);
+    }
+
+    private void setData() {
+        if(mediaItems!=null && mediaItems.size()>0){
+            MediaItem mediaItem = mediaItems.get(position);
+            tvName.setText(mediaItem.getName());
+            vv.setVideoPath(mediaItem.getData());
+        }else if(uri!=null){
+            vv.setVideoURI(uri);
+        }
+       setButtonStatus();
+
+    }
+
+    private void setButtonStatus() {
+        if(mediaItems!=null && mediaItems.size()>0){
+            setEnable(true);
+            if(position==0){
+                btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+                btnPre.setEnabled(false);
+            }
+            if(position==mediaItems.size()-1){
+                btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+                btnNext.setEnabled(false);
+            }
+        }else if(uri!=null){
+            setEnable(false);
+        }
+    }
+
+    private void setEnable(boolean b) {
+        if(b){
+            btnPre.setBackgroundResource(R.drawable.btn_pre_selector);
+            btnNext.setBackgroundResource(R.drawable.btn_next_selector);
+        }else{
+            btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+            btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+        }
+
+        btnPre.setEnabled(b);
+        btnNext.setEnabled(b);
+    }
+
+
+    private void setNextvideo() {
+        position++;
+        if(position < mediaItems.size()){
+            MediaItem mediaItem = mediaItems.get(position);
+            vv.setVideoPath(mediaItem.getData());
+            tvName.setText(mediaItem.getName());
+            setButtonStatus();
+        }else {
+            Toast.makeText(SystemView.this, "退出播放器", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    private void setPrevideo() {
+        position--;
+        if(position >0){
+            MediaItem mediaItem = mediaItems.get(position);
+            vv.setVideoPath(mediaItem.getData());
+            tvName.setText(mediaItem.getName());
+            setButtonStatus();
+        }
+    }
+
+
     private void initData() {
-       utils=new Utils();
+        utils=new Utils();
         receiver = new MyBroadCastReceiver();
         IntentFilter intentFilter=new IntentFilter();
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
@@ -220,7 +296,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
         vv.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                finish();
+               setNextvideo();
             }
         });
 
@@ -243,6 +319,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
             }
         });
     }
+
 
     @Override
     protected void onDestroy() {
