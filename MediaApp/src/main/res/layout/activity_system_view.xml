@@ -4,14 +4,16 @@
     android:id="@+id/activity_system_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:background="#000000"
+    android:gravity="center"
     tools:context="atguigu.com.mediaplayer321.Media.SystemView">
 
+
     <VideoView
-        android:layout_centerInParent="true"
         android:id="@+id/vv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true" />
 
+    <include layout="@layout/mediavideocontroller" />
 </RelativeLayout>
