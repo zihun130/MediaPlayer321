@@ -20,4 +20,12 @@
         <item name="android:textSize">12sp</item>
     </style>
 
+
+    <style name="MyTheme" parent="Theme.AppCompat.Light.NoActionBar" >
+        <!-- Customize your theme here. -->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowActionBar">false</item>
+    </style>
+
 </resources>

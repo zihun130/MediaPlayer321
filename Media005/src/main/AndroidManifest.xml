@@ -18,8 +18,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".SecondActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
             android:launchMode="singleTask"></activity>
-        <activity android:name=".SystemView"></activity>
+        <activity android:name=".SystemView"
+            android:theme="@style/MyTheme"></activity>
     </application>
 
 </manifest>
