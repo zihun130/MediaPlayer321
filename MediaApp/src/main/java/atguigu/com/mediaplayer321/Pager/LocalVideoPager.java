@@ -15,6 +15,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import atguigu.com.mediaplayer321.Adapter.LocalVideoAdapter;
+import atguigu.com.mediaplayer321.Media.SystemView;
 import atguigu.com.mediaplayer321.R;
 import atguigu.com.mediaplayer321.domain.MediaItem;
 import atguigu.com.mediaplayer321.fragment.BaseFragment;

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:background="#000000"
-    tools:context="atguigu.com.mediaplayer321.Pager.SystemView">
+    tools:context="atguigu.com.mediaplayer321.Media.SystemView">
 
     <VideoView
         android:layout_centerInParent="true"

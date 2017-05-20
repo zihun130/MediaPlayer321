@@ -1,4 +1,4 @@
-package atguigu.com.mediaplayer321.Pager;
+package atguigu.com.mediaplayer321.Media;
 
 import android.media.MediaPlayer;
 import android.net.Uri;
