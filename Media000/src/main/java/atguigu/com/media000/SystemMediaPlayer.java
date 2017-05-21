@@ -96,9 +96,9 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         } else if ( v == btnSwitchPlayer ) {
             // Handle clicks for btnSwitchPlayer
         } else if ( v == btnExit ) {
-            // Handle clicks for btnExit
+            finish();
         } else if ( v == btnPre ) {
-            // Handle clicks for btnPre
+           setPreVideo();
         } else if ( v == btnStartPause ) {
             if(vv.isPlaying()){
                 vv.pause();
@@ -108,13 +108,75 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
                 btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
             }
         } else if ( v == btnNext ) {
-            // Handle clicks for btnNext
+            setNextVideo();
         } else if ( v == btnSwitchScreen ) {
-            // Handle clicks for btnSwitchScreen
+            vv.setVideoURI(uri);
+
+        }
+
+        setButtonStatus();
+    }
+
+    private void setButtonStatus() {
+        if(mediaItem!=null && mediaItem.size()>0){
+            //有视频播放
+            setEnable(true);
+            if(position==0){
+                btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+                setEnable(false);
+            }
+            if(position==mediaItem.size()-1){
+                btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+                setEnable(false);
+            }
+        }else if(uri!=null){
+            setEnable(false);
+        }
+
+    }
+
+    private void setEnable(boolean b) {
+        if(b){
+            //上一个和下一个可以点击
+            btnPre.setBackgroundResource(R.drawable.btn_pre_selector);
+            btnNext.setBackgroundResource(R.drawable.btn_next_selector);
+        }else {
+            //上一个和下一个不可以点击
+            btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+            btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+        }
+
+        btnPre.setEnabled(b);
+        btnNext.setEnabled(b);
+    }
+
+    private void setNextVideo() {
+        position++;
+        if(position < mediaItem.size()){
+            MediaItems mediaItems = mediaItem.get(position);
+            tvName.setText(mediaItems.getName());
+            vv.setVideoPath(mediaItems.getData());
+
+            setButtonStatus();
+        }else {
+            Toast.makeText(SystemMediaPlayer.this, "退出播放器", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+    }
+
+    private void setPreVideo() {
+        position--;
+        if(position >= 0){
+            MediaItems mediaItems = mediaItem.get(position);
+            tvName.setText(mediaItems.getName());
+            vv.setVideoPath(mediaItems.getData());
+
+            setButtonStatus();
         }
     }
 
-private Handler handler=new Handler(){
+    private Handler handler=new Handler(){
     @Override
     public void handleMessage(Message msg) {
         super.handleMessage(msg);
@@ -243,7 +305,9 @@ private Handler handler=new Handler(){
         vv.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
+                Toast.makeText(SystemMediaPlayer.this, "播放已到尽头", Toast.LENGTH_SHORT).show();
                 finish();
+                setNextVideo();
             }
         });
 
