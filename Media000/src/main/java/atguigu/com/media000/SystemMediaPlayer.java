@@ -1,5 +1,9 @@
 package atguigu.com.media000;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,10 +19,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class SystemMediaPlayer extends AppCompatActivity implements View.OnClickListener {
     private VideoView vv;
     private Uri uri;
     private Utils utils;
+    private  MyBroadCastReceiver receiver;
 
 
     private LinearLayout llTop;
@@ -115,6 +123,8 @@ private Handler handler=new Handler(){
                 seekbarVideo.setProgress(currentPosition);
                 //设置当前时间
                 tvCurrentTime.setText(utils.stringForTime(currentPosition));
+                //设置系统时间
+                tvSystemTime.setText(getSystemTime());
 
                 sendEmptyMessageDelayed(PROGRESS,1000);
 
@@ -123,16 +133,19 @@ private Handler handler=new Handler(){
 
     }
 };
-
-
+    //得到系统时间
+    private String getSystemTime(){
+        SimpleDateFormat dateFormat = new SimpleDateFormat();
+        return dateFormat.format(new Date());
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_system_media_player);
         vv = (VideoView)findViewById(R.id.vv);
-        utils=new Utils();
 
         findViews();
+        initData();
 
         setListener();
 
@@ -140,6 +153,44 @@ private Handler handler=new Handler(){
 
         //设置播放地址
         vv.setVideoURI(uri);
+
+    }
+
+    private void initData() {
+        utils=new Utils();
+        //监视电量变化的广播
+         receiver = new MyBroadCastReceiver();
+        IntentFilter intentFilter=new IntentFilter();
+        //电量的变化
+        intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
+        registerReceiver(receiver,intentFilter);
+    }
+
+    class MyBroadCastReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int level=intent.getIntExtra("level",0);
+            setBatteryView(level);
+        }
+    }
+
+    private void setBatteryView(int level) {
+        if(level<=0){
+            ivBattery.setImageResource(R.drawable.ic_battery_0);
+        }else if(level<=10){
+            ivBattery.setImageResource(R.drawable.ic_battery_10);
+        }else if(level<=20){
+            ivBattery.setImageResource(R.drawable.ic_battery_20);
+        }else if(level<=40){
+            ivBattery.setImageResource(R.drawable.ic_battery_40);
+        }else if(level<=60){
+            ivBattery.setImageResource(R.drawable.ic_battery_60);
+        }else if(level<=80){
+            ivBattery.setImageResource(R.drawable.ic_battery_80);
+        }else if(level<=100){
+            ivBattery.setImageResource(R.drawable.ic_battery_100);
+        }
 
     }
 
@@ -152,7 +203,7 @@ private Handler handler=new Handler(){
                 int duration=vv.getDuration();
                 seekbarVideo.setMax(duration);
                 //设置文本时间
-                tvDuration.setText(duration);
+                tvDuration.setText(utils.stringForTime(duration));
                 vv.seekTo(100);
                 vv.start();
 
@@ -201,6 +252,11 @@ private Handler handler=new Handler(){
         super.onDestroy();
         if(handler!=null){
             handler.removeCallbacksAndMessages(null);
+            handler=null;
+        }
+        if(receiver!=null){
+            unregisterReceiver(receiver);
+            receiver=null;
         }
     }
 }
