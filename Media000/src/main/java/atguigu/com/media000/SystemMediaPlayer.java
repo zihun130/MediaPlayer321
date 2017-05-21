@@ -3,6 +3,8 @@ package atguigu.com.media000;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -16,6 +18,7 @@ import android.widget.VideoView;
 public class SystemMediaPlayer extends AppCompatActivity implements View.OnClickListener {
     private VideoView vv;
     private Uri uri;
+    private Utils utils;
 
 
     private LinearLayout llTop;
@@ -34,6 +37,7 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
     private Button btnStartPause;
     private Button btnNext;
     private Button btnSwitchScreen;
+    private static final int PROGRESS=0;
 
     /**
      * Find the Views in the layout<br />
@@ -99,7 +103,26 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         }
     }
 
+private Handler handler=new Handler(){
+    @Override
+    public void handleMessage(Message msg) {
+        super.handleMessage(msg);
+        switch (msg.what) {
+            case PROGRESS :
+                //得到当前进度
+                int currentPosition = vv.getCurrentPosition();
+                //更新进度
+                seekbarVideo.setProgress(currentPosition);
+                //设置当前时间
+                tvCurrentTime.setText(utils.stringForTime(currentPosition));
 
+                sendEmptyMessageDelayed(PROGRESS,1000);
+
+                break;
+        }
+
+    }
+};
 
 
     @Override
@@ -107,6 +130,7 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_system_media_player);
         vv = (VideoView)findViewById(R.id.vv);
+        utils=new Utils();
 
         findViews();
 
@@ -124,9 +148,15 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         vv.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                //文本总时间
                 int duration=vv.getDuration();
                 seekbarVideo.setMax(duration);
+                //设置文本时间
+                tvDuration.setText(duration);
+                vv.seekTo(100);
                 vv.start();
+
+                handler.sendEmptyMessage(PROGRESS);
             }
         });
         //播放错误监听
@@ -164,7 +194,13 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
 
             }
         });
+    }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(handler!=null){
+            handler.removeCallbacksAndMessages(null);
+        }
     }
 }
