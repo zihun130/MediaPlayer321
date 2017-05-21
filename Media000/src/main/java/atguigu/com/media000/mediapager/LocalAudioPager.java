@@ -1,13 +1,17 @@
-package atguigu.com.media000;
+package atguigu.com.media000.mediapager;
 
 import android.graphics.Color;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
 
+import atguigu.com.media000.BaseFragment;
 
+/**
+ * Created by sun on 2017/5/19.
+ */
 
-public class LocalVideoPager extends BaseFragment {
+public class LocalAudioPager extends BaseFragment {
     private TextView textView;
     @Override
     public View initview() {
@@ -20,7 +24,6 @@ public class LocalVideoPager extends BaseFragment {
 
     @Override
     public void initdata() {
-        textView.setText("本地视频内容");
-
+        textView.setText("本地音频内容");
     }
 }

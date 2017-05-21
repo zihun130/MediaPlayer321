@@ -8,6 +8,11 @@ import android.widget.RadioGroup;
 
 import java.util.ArrayList;
 
+import atguigu.com.media000.mediapager.LocalAudioPager;
+import atguigu.com.media000.mediapager.LocalVideoPager;
+import atguigu.com.media000.mediapager.NetAudioPager;
+import atguigu.com.media000.mediapager.NetVideoPager;
+
 public class SecondActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
     private RadioGroup rg_main;
     private ArrayList<BaseFragment> fragment;
