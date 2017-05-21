@@ -9,7 +9,7 @@
     tools:context="atguigu.com.mediaplayer321.Media.SystemView">
 
 
-    <VideoView
+    <atguigu.com.mediaplayer321.View.VideoView
         android:id="@+id/vv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
