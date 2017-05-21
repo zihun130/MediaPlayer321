@@ -1,8 +1,10 @@
 package atguigu.com.media000.mediapager;
 
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -17,6 +19,7 @@ import atguigu.com.media000.BaseFragment;
 import atguigu.com.media000.LocalVideoPagerAdapter;
 import atguigu.com.media000.MediaItems;
 import atguigu.com.media000.R;
+import atguigu.com.media000.SystemMediaPlayer;
 
 
 public class LocalVideoPager extends BaseFragment {
@@ -34,6 +37,16 @@ public class LocalVideoPager extends BaseFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 MediaItems item = adapter.getItem(position);
+                Intent intent=new Intent(context,SystemMediaPlayer.class);
+
+                Bundle bundle=new Bundle();
+                bundle.putSerializable("videoList",mediaItem);
+                intent.setDataAndType(Uri.parse(item.getData()),"video/*");
+
+                intent.putExtra("position",position);
+                intent.putExtras(bundle);
+                startActivity(intent);
+
             }
         });
         return view;
@@ -50,7 +63,7 @@ public class LocalVideoPager extends BaseFragment {
             super.handleMessage(msg);
             if(mediaItem!=null && mediaItem.size()>0){
                 tv_nodata.setVisibility(View.GONE);
-                 adapter=new LocalVideoPagerAdapter(context,mediaItem);
+                adapter=new LocalVideoPagerAdapter(context,mediaItem);
                 lv_local_video_pager.setAdapter(adapter);
             }else {
                 tv_nodata.setVisibility(View.VISIBLE);
@@ -80,7 +93,7 @@ public class LocalVideoPager extends BaseFragment {
                         String data=cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA));
                         mediaItem.add(new MediaItems(name,duration,size,data));
 
-                        handler.removeMessages(0);
+                        handler.sendEmptyMessage(0);
                     }
                     cursor.close();
                 }

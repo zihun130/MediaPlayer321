@@ -1,10 +1,12 @@
 package atguigu.com.media000;
 
+import java.io.Serializable;
+
 /**
  * Created by sun on 2017/5/21.
  */
 
-public class MediaItems {
+public class MediaItems implements Serializable {
     private String name;
     private long   duration;
     private long   size;
