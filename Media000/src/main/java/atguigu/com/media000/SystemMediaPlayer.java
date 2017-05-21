@@ -20,6 +20,7 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class SystemMediaPlayer extends AppCompatActivity implements View.OnClickListener {
@@ -27,6 +28,8 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
     private Uri uri;
     private Utils utils;
     private  MyBroadCastReceiver receiver;
+    private ArrayList<MediaItems> mediaItem;
+    private int position;
 
 
     private LinearLayout llTop;
@@ -149,12 +152,30 @@ private Handler handler=new Handler(){
 
         setListener();
 
-        uri = getIntent().getData();
+        setData();
+        getData();
 
-        //设置播放地址
-        vv.setVideoURI(uri);
+
 
     }
+
+    private void setData() {
+        if(mediaItem!=null && mediaItem.size()>0){
+            MediaItems mediaItems = mediaItem.get(position);
+            tvName.setText(mediaItems.getName());
+            vv.setVideoPath(mediaItems.getData());
+        }else if(uri!=null){
+            vv.setVideoURI(uri);
+        }
+    }
+
+    private void getData() {
+        uri=getIntent().getData();
+        mediaItem = (ArrayList<MediaItems>) getIntent().getSerializableExtra("videoList");
+        position=getIntent().getIntExtra("position",0);
+    }
+
+
 
     private void initData() {
         utils=new Utils();

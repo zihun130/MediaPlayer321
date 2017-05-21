@@ -41,7 +41,7 @@ public class LocalVideoPager extends BaseFragment {
 
                 Bundle bundle=new Bundle();
                 bundle.putSerializable("videoList",mediaItem);
-                intent.setDataAndType(Uri.parse(item.getData()),"video/*");
+                //intent.setDataAndType(Uri.parse(item.getData()),"video/*");
                 intent.putExtra("position",position);
                 intent.putExtras(bundle);
                 startActivity(intent);
