@@ -1,7 +1,9 @@
 package atguigu.com.mediaplayer321.Media;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
@@ -521,7 +523,7 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
         vv.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                Toast.makeText(VitamioSystemView.this, "播放出错了！！", Toast.LENGTH_SHORT).show();
+                showErrorDialog();
                 return false;
             }
         });
@@ -573,6 +575,20 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
             }
         });
 
+    }
+
+    private void showErrorDialog() {
+        new AlertDialog.Builder(this)
+                    .setTitle("提示")
+                    .setMessage("当前视频不可播放，请检查网络或者视频文件是否有损坏！")
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
     }
 
     //声音滑动的变化
