@@ -1,7 +1,9 @@
 package atguigu.com.mediaplayer321.Media;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
@@ -147,7 +149,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
 
             updataVoice(isMute);
         } else if ( v == btnSwitchPlayer ) {
-
+            switchPlayer();
 
         } else if ( v == btnExit ) {
            finish();
@@ -169,6 +171,20 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
 
         handler.removeMessages(HIDEMEDIACONTROLLER);
         handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
+    }
+
+    private void switchPlayer() {
+        new AlertDialog.Builder(this)
+                    .setTitle("提示")
+                    .setMessage("当前使用系统播放器播放，当播放有声音没有画面，请切换到万能播放器播放")
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startVitamioSystemView();
+                        }
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
     }
 
     private void updataVoice(boolean isMute) {

@@ -143,8 +143,7 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
 
             updataVoice(isMute);
         } else if ( v == btnSwitchPlayer ) {
-
-
+            switchPlayer();
         } else if ( v == btnExit ) {
            finish();
         } else if ( v == btnPre ) {
@@ -165,6 +164,40 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
 
         handler.removeMessages(HIDEMEDIACONTROLLER);
         handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
+    }
+
+    private void switchPlayer() {
+        new AlertDialog.Builder(this)
+                    .setTitle("提示")
+                    .setMessage("如果当前为万能播放器播放，当播放有色块，播放质量不好，请切换到系统播放器播放")
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startSystemView();
+                        }
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
+
+    }
+
+    private void startSystemView() {
+        if(vv!=null){
+            vv.stopPlayback();
+        }
+        Intent intent=new Intent(this,SystemView.class);
+        if(mediaItems!=null && mediaItems.size()>0){
+            Bundle bundle=new Bundle();
+            bundle.putSerializable("videoList",mediaItems);
+            intent.putExtra("position",position);
+            intent.putExtras(bundle);
+
+        }else if(uri!=null){
+            intent.setData(uri);
+        }
+
+        startActivity(intent);
+        finish();
     }
 
     private void updataVoice(boolean isMute) {
