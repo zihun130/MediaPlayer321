@@ -551,6 +551,13 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
 
                 hideMediaController();
                 setVideoType(DEFAULT_SCREEN);
+
+                if(vv.isPlaying()){
+                    //设置暂停
+                    btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
+                }else {
+                    btnStartPause.setBackgroundResource(R.drawable.btn_start_selector);
+                }
             }
         });
         //播放错误监听
@@ -622,7 +629,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
                             ll_buffering.setVisibility(View.GONE);
                             break;
                     }
-                    return false;
+                    return true;
                 }
             });
         }

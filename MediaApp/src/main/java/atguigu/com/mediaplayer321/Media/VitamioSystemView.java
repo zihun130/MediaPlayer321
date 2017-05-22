@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -39,6 +40,7 @@ import io.vov.vitamio.Vitamio;
 public class VitamioSystemView extends AppCompatActivity implements View.OnClickListener {
 
     private static final int HIDEMEDIACONTROLLER = 1;
+    private static final int SHOW_NET_SPEED = 2;
     private VitamioVideoView vv;
     private Uri uri;
     private Utils utils;
@@ -60,7 +62,8 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
     private TextView     tv_net_speed;
     private int precurrentPosition;
 
-
+    private LinearLayout ll_loading;
+    private TextView     tv_loading_net_speed;
 
 
 
@@ -117,6 +120,9 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
 
         ll_buffering = (LinearLayout)findViewById(R.id.ll_buffering);
         tv_net_speed = (TextView)findViewById(R.id.tv_net_speed);
+        ll_loading = (LinearLayout)findViewById(R.id.ll_loading);
+        tv_loading_net_speed = (TextView)findViewById(R.id.tv_loading_net_speed);
+
 
         btnVoice.setOnClickListener( this );
         btnSwitchPlayer.setOnClickListener( this );
@@ -128,6 +134,7 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
         //设置最大声音（0-15）
         seekbarVoice.setMax(maxVoice);
         seekbarVoice.setProgress(currentVoice);
+        handler.sendEmptyMessage(SHOW_NET_SPEED);
     }
 
     /**
@@ -433,6 +440,7 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
         position++;
         if(position < mediaItems.size()){
             MediaItem mediaItem = mediaItems.get(position);
+            ll_loading.setVisibility(View.VISIBLE);
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
             //有网时获取网络地址
@@ -449,6 +457,7 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
         //列表是从0开始的。所以要有等于0。
         if(position >=0){
             MediaItem mediaItem = mediaItems.get(position);
+            ll_loading.setVisibility(View.VISIBLE);
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
             //有网时获取网络地址
@@ -492,6 +501,15 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
+                case SHOW_NET_SPEED:
+                    if(isNetUri){
+                        String netSpeed = utils.getNetSpeed(VitamioSystemView.this);
+                        tv_loading_net_speed.setText("正在加载中..."+netSpeed);
+                        tv_net_speed.setText("正在缓冲..."+netSpeed);
+                        sendEmptyMessageDelayed(SHOW_NET_SPEED,1000);
+
+                    }
+                    break;
                 case PROGRESS:
                     int currentPosition = (int) vv.getCurrentPosition();
                     seekbarVideo.setProgress(currentPosition);
@@ -550,6 +568,13 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
 
                 hideMediaController();
                 setVideoType(DEFAULT_SCREEN);
+
+                if(vv.isPlaying()){
+                    //设置暂停
+                    btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
+                }else {
+                    btnStartPause.setBackgroundResource(R.drawable.btn_start_selector);
+                }
             }
         });
         //播放错误监听
@@ -607,6 +632,24 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
                 handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
             }
         });
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1){
+            vv.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                @Override
+                public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                    switch (what) {
+                        case MediaPlayer.MEDIA_INFO_BUFFERING_START :
+                         ll_buffering.setVisibility(View.VISIBLE);
+                            break;
+                        case MediaPlayer.MEDIA_INFO_BUFFERING_END :
+                            ll_buffering.setVisibility(View.GONE);
+
+                            break;
+                    }
+                    return true;
+                }
+            });
+        }
 
     }
 
