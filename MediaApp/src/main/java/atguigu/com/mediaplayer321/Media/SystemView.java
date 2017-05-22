@@ -13,6 +13,7 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -276,10 +277,38 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
         currentVoice=am.getStreamVolume(AudioManager.STREAM_MUSIC);
         maxVoice=am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
     }
+    //坐标
+    private float downY;
+    //滑动的初始声音
+    private int   mVoice;
+    //滑动的区域
+    private float touchS;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         detector.onTouchEvent(event);
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN :
+                downY=event.getY();
+                mVoice=am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                touchS=Math.min(screenWidth,screenHeight);
+                handler.removeMessages(HIDEMEDIACONTROLLER);
+                break;
+            case MotionEvent.ACTION_MOVE :
+                float endY=event.getY();
+                float distanceY=downY-endY;
+                float changeY=(distanceY/touchS)*mVoice;
+                if(changeY!=0){
+                    int finalVoice= (int) Math.min(Math.max(mVoice+changeY,0),maxVoice);
+                    updataVoiceProgress(finalVoice);
+                }
+
+                break;
+            case MotionEvent.ACTION_UP :
+                handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
+
+                break;
+        }
         return super.onTouchEvent(event);
     }
 
@@ -498,6 +527,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
                 handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
             }
         });
+
     }
 
     //声音滑动的变化
@@ -526,5 +556,23 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
             receiver=null;
         }
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode==KeyEvent.KEYCODE_VOLUME_DOWN){
+            currentVoice--;
+            updataVoiceProgress(currentVoice);
+            handler.removeMessages(HIDEMEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
+            return true;
+        }else if(keyCode==KeyEvent.KEYCODE_VOLUME_UP){
+            currentVoice++;
+            updataVoiceProgress(currentVoice);
+            handler.removeMessages(HIDEMEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

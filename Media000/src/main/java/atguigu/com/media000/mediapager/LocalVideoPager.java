@@ -36,7 +36,7 @@ public class LocalVideoPager extends BaseFragment {
         lv_local_video_pager.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                MediaItems item = adapter.getItem(position);
+               // MediaItems item = adapter.getItem(position);
                 Intent intent=new Intent(context,SystemMediaPlayer.class);
 
                 Bundle bundle=new Bundle();

@@ -4,12 +4,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,7 +21,6 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,6 +28,8 @@ import java.util.Date;
 
 public class SystemMediaPlayer extends AppCompatActivity implements View.OnClickListener {
     private static final int HIDE_MEDIACONTROLLER = 1;
+    private static final int DEFAULT_SCREEN = 0;
+    private static final int FULL_SCREEN = 1;
     private VideoView vv;
     private Uri uri;
     private Utils utils;
@@ -35,7 +38,19 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
     private int position;
     private GestureDetector detector;
     private boolean isShowMediaController = false;
+    //是否全屏
     private boolean isFullScreen=false;
+
+    private int screenWidth;
+    private int screenHeight;
+    private int videoWidth;
+    private int videoHeight;
+
+    //设置声音的变量
+    private int maxVoice;
+    private int currentVoice;
+    private AudioManager am;
+    private boolean isMute=false;
 
 
     private LinearLayout llTop;
@@ -87,6 +102,9 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         btnStartPause.setOnClickListener( this );
         btnNext.setOnClickListener( this );
         btnSwitchScreen.setOnClickListener( this );
+        //设置最大音量和当前进度
+        seekbarVoice.setMax(maxVoice);
+        seekbarVoice.setProgress(currentVoice);
     }
 
     /**
@@ -98,7 +116,8 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
     @Override
     public void onClick(View v) {
         if ( v == btnVoice ) {
-            // Handle clicks for btnVoice
+            isMute=!isMute;
+            //updataVoice(isMute);
         } else if ( v == btnSwitchPlayer ) {
             // Handle clicks for btnSwitchPlayer
         } else if ( v == btnExit ) {
@@ -110,13 +129,65 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         } else if ( v == btnNext ) {
             setNextVideo();
         } else if ( v == btnSwitchScreen ) {
-
+           if(isFullScreen){
+               setVideoType(DEFAULT_SCREEN);
+           }else {
+               setVideoType(FULL_SCREEN);
+           }
 
         }
 
         handler.removeMessages(HIDE_MEDIACONTROLLER);
         handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
     }
+
+    /*private void updataVoice(boolean isMute) {
+        if(isMute){
+            //静音
+            am.setStreamVolume(AudioManager.STREAM_MUSIC,0,0);
+            seekbarVoice.setProgress(0);
+        }else {
+            //非静音
+            am.setStreamVolume(AudioManager.STREAM_MUSIC,currentVoice,0);
+            seekbarVoice.setProgress(currentVoice);
+        }
+
+    }
+*/
+    private void setVideoType(int videoType) {
+        switch (videoType) {
+            case FULL_SCREEN:
+                isFullScreen=true;
+                //默认按钮
+                btnSwitchScreen.setBackgroundResource(R.drawable.btn_switch_screen_default_selector);
+                //设置全屏显示
+                vv.setVideoSize(screenWidth,screenHeight);
+                break;
+
+            case DEFAULT_SCREEN:
+                isFullScreen=false;
+                //全屏按钮
+                btnSwitchScreen.setBackgroundResource(R.drawable.btn_switch_screen_full_selector);
+                //原生宽和高
+                int mVideoWidth=videoWidth;
+                int mVideoHeight=videoHeight;
+                //显示的宽和高
+                int width=screenWidth;
+                int height=screenHeight;
+                if (mVideoWidth * height < width * mVideoHeight) {
+                    //Log.i("@@@", "image too wide, correcting");
+                    width = height * mVideoWidth / mVideoHeight;
+                } else if (mVideoWidth * height > width * mVideoHeight) {
+                    //Log.i("@@@", "image too tall, correcting");
+                    height = width * mVideoHeight / mVideoWidth;
+                }
+
+                vv.setVideoSize(width,height);
+                break;
+        }
+
+    }
+
     //开始与暂停设置
     private void setStartOrPause() {
         if(vv.isPlaying()){
@@ -165,9 +236,8 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         position++;
         if(position < mediaItem.size()){
             MediaItems mediaItems = mediaItem.get(position);
-            tvName.setText(mediaItems.getName());
             vv.setVideoPath(mediaItems.getData());
-
+            tvName.setText(mediaItems.getName());
             setButtonStatus();
         }else {
             Toast.makeText(SystemMediaPlayer.this, "退出播放器", Toast.LENGTH_SHORT).show();
@@ -180,8 +250,9 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         position--;
         if(position >= 0){
             MediaItems mediaItems = mediaItem.get(position);
-            tvName.setText(mediaItems.getName());
+
             vv.setVideoPath(mediaItems.getData());
+            tvName.setText(mediaItems.getName());
 
             setButtonStatus();
         }
@@ -213,7 +284,7 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
 };
     //得到系统时间
     private String getSystemTime(){
-        SimpleDateFormat dateFormat = new SimpleDateFormat();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
         return dateFormat.format(new Date());
     }
     @Override
@@ -226,13 +297,20 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         initData();
 
         setListener();
-
-        setData();
         getData();
+        setData();
+
 
 
 
     }
+
+    private void getData() {
+        uri=getIntent().getData();
+        mediaItem = (ArrayList<MediaItems>) getIntent().getSerializableExtra("videoList");
+        position=getIntent().getIntExtra("position",0);
+    }
+
 
     private void setData() {
         if(mediaItem!=null && mediaItem.size()>0){
@@ -242,14 +320,8 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         }else if(uri!=null){
             vv.setVideoURI(uri);
         }
+        setButtonStatus();
     }
-
-    private void getData() {
-        uri=getIntent().getData();
-        mediaItem = (ArrayList<MediaItems>) getIntent().getSerializableExtra("videoList");
-        position=getIntent().getIntExtra("position",0);
-    }
-
 
 
     private void initData() {
@@ -266,12 +338,18 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
             @Override
             //长按
             public void onLongPress(MotionEvent e) {
+                setButtonStatus();
                 super.onLongPress(e);
             }
 
             @Override
             //双击
             public boolean onDoubleTap(MotionEvent e) {
+                if(isFullScreen){
+                    setVideoType(DEFAULT_SCREEN);
+                }else {
+                    setVideoType(FULL_SCREEN);
+                }
                 return super.onDoubleTap(e);
             }
 
@@ -288,6 +366,16 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
                 return super.onSingleTapConfirmed(e);
             }
         });
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        screenHeight = metrics.heightPixels;
+        screenWidth = metrics.widthPixels;
+
+        //初始化声音
+        /*am= (AudioManager) getSystemService(AUDIO_SERVICE);
+        currentVoice=am.getStreamVolume(AudioManager.STREAM_MUSIC);
+        maxVoice=am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);*/
     }
     //显示视频控制
     private void showMediaController() {
@@ -343,17 +431,19 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         vv.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                videoWidth = mp.getVideoWidth();
+                videoHeight = mp.getVideoHeight();
                 //文本总时间
                 int duration=vv.getDuration();
                 seekbarVideo.setMax(duration);
                 //设置文本时间
                 tvDuration.setText(utils.stringForTime(duration));
-                vv.seekTo(100);
                 vv.start();
 
                 handler.sendEmptyMessage(PROGRESS);
 
                 hideMediaController();
+                setVideoType(DEFAULT_SCREEN);
             }
         });
         //播放错误监听
@@ -368,8 +458,6 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         vv.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                Toast.makeText(SystemMediaPlayer.this, "播放已到尽头", Toast.LENGTH_SHORT).show();
-                finish();
                 setNextVideo();
             }
         });
@@ -395,7 +483,39 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
 
             }
         });
+        //拖动监听声音
+       /* seekbarVoice.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+              if(fromUser){
+                  updataVoiceProgress(progress);
+              }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                handler.removeMessages(HIDE_MEDIACONTROLLER);
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
+            }
+        });*/
     }
+
+    /*private void updataVoiceProgress(int progress) {
+        currentVoice=progress;
+        Log.e("TAG","progress="+progress);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC,currentVoice,0);
+        seekbarVoice.setProgress(currentVoice);
+
+        if(progress<=0){
+            isMute=true;
+        }else {
+            isMute=false;
+        }
+    }*/
 
     @Override
     protected void onDestroy() {
