@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -141,7 +142,7 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
     }
 
-    /*private void updataVoice(boolean isMute) {
+   private void updataVoice(boolean isMute) {
         if(isMute){
             //静音
             am.setStreamVolume(AudioManager.STREAM_MUSIC,0,0);
@@ -153,7 +154,7 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         }
 
     }
-*/
+
     private void setVideoType(int videoType) {
         switch (videoType) {
             case FULL_SCREEN:
@@ -373,9 +374,9 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         screenWidth = metrics.widthPixels;
 
         //初始化声音
-        /*am= (AudioManager) getSystemService(AUDIO_SERVICE);
+        am= (AudioManager) getSystemService(AUDIO_SERVICE);
         currentVoice=am.getStreamVolume(AudioManager.STREAM_MUSIC);
-        maxVoice=am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);*/
+        maxVoice=am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
     }
     //显示视频控制
     private void showMediaController() {
@@ -484,7 +485,7 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
             }
         });
         //拖动监听声音
-       /* seekbarVoice.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        seekbarVoice.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
               if(fromUser){
@@ -501,10 +502,10 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
             public void onStopTrackingTouch(SeekBar seekBar) {
                 handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
             }
-        });*/
+        });
     }
 
-    /*private void updataVoiceProgress(int progress) {
+    private void updataVoiceProgress(int progress) {
         currentVoice=progress;
         Log.e("TAG","progress="+progress);
         am.setStreamVolume(AudioManager.STREAM_MUSIC,currentVoice,0);
@@ -515,7 +516,7 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         }else {
             isMute=false;
         }
-    }*/
+    }
 
     @Override
     protected void onDestroy() {
