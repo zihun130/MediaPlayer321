@@ -5,9 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -29,14 +27,17 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import atguigu.com.mediaplayer321.R;
-import atguigu.com.mediaplayer321.View.VideoView;
+import atguigu.com.mediaplayer321.View.VitamioVideoView;
 import atguigu.com.mediaplayer321.domain.MediaItem;
 import atguigu.com.mediaplayer321.utils.Utils;
+import io.vov.vitamio.MediaPlayer;
+import io.vov.vitamio.Vitamio;
 
-public class SystemView extends AppCompatActivity implements View.OnClickListener {
+
+public class VitamioSystemView extends AppCompatActivity implements View.OnClickListener {
 
     private static final int HIDEMEDIACONTROLLER = 1;
-    private VideoView vv;
+    private VitamioVideoView vv;
     private Uri uri;
     private Utils utils;
     private MyBroadCastReceiver receiver;
@@ -93,6 +94,8 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
      * (http://www.buzzingandroid.com/tools/android-layout-finder)
      */
     private void findViews() {
+        //初始化解码器
+        Vitamio.isInitialized(getApplicationContext());
         llTop = (LinearLayout)findViewById( R.id.ll_top );
         tvName = (TextView)findViewById( R.id.tv_name );
         ivBattery = (ImageView)findViewById( R.id.iv_battery );
@@ -226,7 +229,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_system_view);
-        vv = (VideoView)findViewById(R.id.vv);
+        vv = (VitamioVideoView)findViewById(R.id.vv);
 
 
         initData();
@@ -401,7 +404,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
             isNetUri=utils.isNetUri(mediaItem.getData());
             setButtonStatus();
         }else {
-            Toast.makeText(SystemView.this, "退出播放器", Toast.LENGTH_SHORT).show();
+            Toast.makeText(VitamioSystemView.this, "退出播放器", Toast.LENGTH_SHORT).show();
             finish();
         }
     }
@@ -455,7 +458,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
             super.handleMessage(msg);
             switch (msg.what) {
                 case PROGRESS:
-                    int currentPosition = vv.getCurrentPosition();
+                    int currentPosition = (int) vv.getCurrentPosition();
                     seekbarVideo.setProgress(currentPosition);
 
                     tvCurrentTime.setText(utils.stringForTime(currentPosition));
@@ -463,7 +466,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
                     tvSystemTime.setText(getSystemTime());
                     //设置视频缓存效果
                     if(isNetUri){
-                        int bufferPercentage = vv.getBufferPercentage();
+                        int bufferPercentage = vv.getBufferPercentage();//0~100;
                         int totalBuffer = bufferPercentage*seekbarVideo.getMax();
                         int secondaryProgress =totalBuffer/100;
                         seekbarVideo.setSecondaryProgress(secondaryProgress);
@@ -504,7 +507,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
                 videoWidth=mp.getVideoWidth();
                 videoHeight=mp.getVideoHeight();
 
-                int duration = vv.getDuration();
+                int duration = (int) vv.getDuration();
                 seekbarVideo.setMax(duration);
                 tvDuration.setText(utils.stringForTime(duration));
                 vv.start();
@@ -518,7 +521,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
         vv.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                startVitamioSystemView();
+                Toast.makeText(VitamioSystemView.this, "播放出错了！！", Toast.LENGTH_SHORT).show();
                 return false;
             }
         });
@@ -569,45 +572,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
                 handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
             }
         });
-        //设置监听卡顿现象
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1){
-            vv.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-                @Override
-                public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                    switch (what) {
-                        case MediaPlayer.MEDIA_INFO_BUFFERING_START :
-                            ll_buffering.setVisibility(View.VISIBLE);
 
-                            break;
-                        case MediaPlayer.MEDIA_INFO_BUFFERING_END :
-                            ll_buffering.setVisibility(View.GONE);
-                            break;
-                    }
-                    return false;
-                }
-            });
-        }
-
-    }
-
-    //启动万能播放器
-
-    private void startVitamioSystemView() {
-        if(vv != null){
-            vv.stopPlayback();
-        }
-        Intent intent = new Intent(this, VitamioSystemView.class);
-        if(mediaItems != null && mediaItems.size() >0){
-            Bundle bunlder = new Bundle();
-            bunlder.putSerializable("videolist",mediaItems);
-            intent.putExtra("position",position);
-            //放入Bundler
-            intent.putExtras(bunlder);
-        }else if(uri != null){
-            intent.setData(uri);
-        }
-        startActivity(intent);
-        finish();//关闭系统播放器
     }
 
     //声音滑动的变化
