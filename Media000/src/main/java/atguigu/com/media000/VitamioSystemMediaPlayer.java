@@ -503,7 +503,7 @@ public class VitamioSystemMediaPlayer extends AppCompatActivity implements View.
             case MotionEvent.ACTION_MOVE :
                 float endY=event.getY();
                 float diatenceY=downY-endY;
-                float changeY=(diatenceY/touchs)*mVoice;
+                float changeY=(diatenceY/touchs)*maxVoice;
                 if(changeY!=0){
                    int  finalVoice= (int) Math.min(Math.max((mVoice+changeY),0),maxVoice);
                     updataVoiceProgress(finalVoice);

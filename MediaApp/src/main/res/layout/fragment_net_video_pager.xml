@@ -2,12 +2,23 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
-    <ListView
-        android:id="@+id/lv_net_video_pager"
+    <com.cjj.MaterialRefreshLayout
+        android:id="@+id/refresh"
+        app:isLoadMore="true"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="match_parent">
+
+        <ListView
+            android:id="@+id/lv_net_video_pager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </com.cjj.MaterialRefreshLayout>
+
+
 
     <TextView
         android:id="@+id/tv_nodata"

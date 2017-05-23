@@ -19,6 +19,7 @@ import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -64,7 +65,7 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
     private TextView tv_loading_net_speed;
 
 
-
+    private TextView brightnessTextView;
 
 
     private LinearLayout llTop;
@@ -120,6 +121,10 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
         tv_net_speed = (TextView)findViewById(R.id.tv_net_speed);
         ll_loading = (LinearLayout)findViewById(R.id.ll_loading);
         tv_loading_net_speed = (TextView)findViewById(R.id.tv_loading_net_speed);
+
+
+
+        brightnessTextView = (TextView)findViewById(R.id.tv_bright);
 
 
         btnVoice.setOnClickListener( this );
@@ -315,39 +320,73 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
         currentVoice=am.getStreamVolume(AudioManager.STREAM_MUSIC);
         maxVoice=am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
     }
+
     //坐标
-    private float downY;
+    private float downY=0;
     //滑动的初始声音
     private int   mVoice;
     //滑动的区域
     private float touchS;
+
+    private float downX=0;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         detector.onTouchEvent(event);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN :
+                downX=event.getX();
                 downY=event.getY();
                 mVoice=am.getStreamVolume(AudioManager.STREAM_MUSIC);
                 touchS=Math.min(screenWidth,screenHeight);
+
                 handler.removeMessages(HIDEMEDIACONTROLLER);
                 break;
             case MotionEvent.ACTION_MOVE :
                 float endY=event.getY();
                 float distanceY=downY-endY;
-                float changeY=(distanceY/touchS)*mVoice;
-                if(changeY!=0){
-                    int finalVoice= (int) Math.min(Math.max(mVoice+changeY,0),maxVoice);
-                    updataVoiceProgress(finalVoice);
+                if(downX > screenWidth/2){
+
+                    float changeY=(distanceY/touchS)*maxVoice;
+                    if(changeY!=0){
+                        int finalVoice= (int) Math.min(Math.max(mVoice+changeY,0),maxVoice);
+                        updataVoiceProgress(finalVoice);
+                    }
+                }else {
+                    brightnessTextView.setVisibility(View.VISIBLE);
+                    final double FLING_MIN_DISTANCE = 0.5;
+                    final double FLING_MIN_VELOCITY = 0.5;
+                    if (distanceY > FLING_MIN_DISTANCE && Math.abs(distanceY) > FLING_MIN_VELOCITY) {
+                        setBrightness(10);
+                    }
+                    if (distanceY < FLING_MIN_DISTANCE && Math.abs(distanceY) > FLING_MIN_VELOCITY) {
+                        setBrightness(-10);
+                    }
                 }
 
                 break;
             case MotionEvent.ACTION_UP :
                 handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
+                brightnessTextView.setVisibility(View.GONE);
 
                 break;
         }
         return super.onTouchEvent(event);
+    }
+
+
+    public void setBrightness(float brightness) {
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+        lp.screenBrightness = lp.screenBrightness + brightness / 255.0f;
+        if (lp.screenBrightness > 1) {
+            lp.screenBrightness = 1;
+        } else if (lp.screenBrightness < 0.1) {
+            lp.screenBrightness = (float) 0.1;
+        }
+        getWindow().setAttributes(lp);
+
+        float sb = lp.screenBrightness;
+        brightnessTextView.setText((int) Math.ceil(sb * 100) + "%");
     }
 
     private void hideMediaController(){
