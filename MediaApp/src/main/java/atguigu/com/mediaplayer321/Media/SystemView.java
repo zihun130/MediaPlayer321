@@ -372,15 +372,18 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
     private void setData() {
         if(mediaItems!=null && mediaItems.size()>0){
             MediaItem mediaItem = mediaItems.get(position);
-            tvName.setText(mediaItem.getName());
-            vv.setVideoPath(mediaItem.getData());
             //有网时获取网络地址
             isNetUri=utils.isNetUri(mediaItem.getData());
+            tvName.setText(mediaItem.getName());
+            vv.setVideoPath(mediaItem.getData());
+
         }else if(uri!=null){
             vv.setVideoURI(uri);
-            tvName.setText(uri.toString());
             //有网时获取网络地址
             isNetUri=utils.isNetUri(uri.toString());
+            tvName.setText(uri.toString());
+
+
         }
        setButtonStatus();
 
@@ -565,7 +568,8 @@ public class SystemView extends AppCompatActivity implements View.OnClickListene
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
                 startVitamioSystemView();
-                return false;
+                //不改为true 两个播放器转换时会有崩溃现象
+                return true;
             }
         });
         //播放完成监听

@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_system_view"
+    android:id="@+id/activity_system_media_player"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
     android:gravity="center"
-    tools:context="atguigu.com.mediaplayer321.Media.SystemView">
+    android:background="#000000"
+    tools:context="atguigu.com.media000.SystemMediaPlayer">
 
-
-    <atguigu.com.mediaplayer321.View.VitamioVideoView
-        android:id="@+id/vv_vitamio"
+    <atguigu.com.media000.VitamioVideoView
+        android:layout_centerInParent="true"
+        android:id="@+id/vv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerInParent="true" />
-    <include layout="@layout/mediavideocontroller" />
+        android:layout_height="match_parent" />
+
+    <include layout="@layout/mediavideocontroller"/>
 
     <LinearLayout
         android:id="@+id/ll_loading"
@@ -59,4 +59,5 @@
             android:layout_height="wrap_content" />
 
     </LinearLayout>
+
 </RelativeLayout>

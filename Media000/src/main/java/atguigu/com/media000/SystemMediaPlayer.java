@@ -1,19 +1,22 @@
 package atguigu.com.media000;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -31,6 +34,7 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
     private static final int HIDE_MEDIACONTROLLER = 1;
     private static final int DEFAULT_SCREEN = 0;
     private static final int FULL_SCREEN = 1;
+    private static final int SHOW_NET_SPEED = 2;
     private VideoView vv;
     private Uri uri;
     private Utils utils;
@@ -41,6 +45,14 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
     private boolean isShowMediaController = false;
     //是否全屏
     private boolean isFullScreen=false;
+    //判断是否有网络
+    private boolean isNetUrl=true;
+    private int     preposition;
+    private LinearLayout ll_loading;
+    private TextView     tv_loading_net_speed;
+    private LinearLayout ll_buffering;
+    private TextView     tv_net_speed;
+
 
     private int screenWidth;
     private int screenHeight;
@@ -96,6 +108,13 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         btnNext = (Button)findViewById( R.id.btn_next );
         btnSwitchScreen = (Button)findViewById( R.id.btn_switch_screen );
 
+
+        ll_loading = (LinearLayout)findViewById(R.id.ll_loading);
+        tv_loading_net_speed = (TextView)findViewById(R.id.tv_loading_net_speed);
+        ll_buffering = (LinearLayout)findViewById(R.id.ll_buffering);
+        tv_net_speed = (TextView)findViewById(R.id.tv_net_speed);
+
+
         btnVoice.setOnClickListener( this );
         btnSwitchPlayer.setOnClickListener( this );
         btnExit.setOnClickListener( this );
@@ -103,9 +122,8 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         btnStartPause.setOnClickListener( this );
         btnNext.setOnClickListener( this );
         btnSwitchScreen.setOnClickListener( this );
-        //设置最大音量和当前进度
-        seekbarVoice.setMax(maxVoice);
-        seekbarVoice.setProgress(currentVoice);
+
+        handler.sendEmptyMessage(SHOW_NET_SPEED);
     }
 
     /**
@@ -118,9 +136,9 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
     public void onClick(View v) {
         if ( v == btnVoice ) {
             isMute=!isMute;
-            //updataVoice(isMute);
+            updataVoice(isMute);
         } else if ( v == btnSwitchPlayer ) {
-            // Handle clicks for btnSwitchPlayer
+            switchMediaPlayer();
         } else if ( v == btnExit ) {
             finish();
         } else if ( v == btnPre ) {
@@ -142,7 +160,21 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
     }
 
-   private void updataVoice(boolean isMute) {
+    private void switchMediaPlayer() {
+        new AlertDialog.Builder(this)
+                    .setTitle("提示")
+                    .setMessage("当前使用系统播放器播放，当播放有声音没有画面，请切换到万能播放器播放")
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startVitamioSystemView();
+                        }
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
+    }
+
+    private void updataVoice(boolean isMute) {
         if(isMute){
             //静音
             am.setStreamVolume(AudioManager.STREAM_MUSIC,0,0);
@@ -237,6 +269,9 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         position++;
         if(position < mediaItem.size()){
             MediaItems mediaItems = mediaItem.get(position);
+            isNetUrl=utils.isNetUri(mediaItems.getData());
+
+            ll_loading.setVisibility(View.VISIBLE);
             vv.setVideoPath(mediaItems.getData());
             tvName.setText(mediaItems.getName());
             setButtonStatus();
@@ -252,6 +287,9 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
         if(position >= 0){
             MediaItems mediaItems = mediaItem.get(position);
 
+            isNetUrl=utils.isNetUri(mediaItems.getData());
+            ll_loading.setVisibility(View.VISIBLE);
+
             vv.setVideoPath(mediaItems.getData());
             tvName.setText(mediaItems.getName());
 
@@ -264,6 +302,14 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
     public void handleMessage(Message msg) {
         super.handleMessage(msg);
         switch (msg.what) {
+            case SHOW_NET_SPEED:
+                if(isNetUrl){
+                    String netSpeed = utils.getNetSpeed(SystemMediaPlayer.this);
+                    tv_loading_net_speed.setText("正在加载中..."+netSpeed);
+                    tv_net_speed.setText("正在缓冲..."+netSpeed);
+                    handler.sendEmptyMessageDelayed(SHOW_NET_SPEED,1000);
+
+                }
             case PROGRESS :
                 //得到当前进度
                 int currentPosition = vv.getCurrentPosition();
@@ -273,6 +319,26 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
                 tvCurrentTime.setText(utils.stringForTime(currentPosition));
                 //设置系统时间
                 tvSystemTime.setText(getSystemTime());
+
+                if(isNetUrl){
+                    int bufferPercentage = vv.getBufferPercentage();
+                    int totalBuffer=bufferPercentage*seekbarVideo.getMax();
+                    int secondaryBuffer=totalBuffer/100;
+                    seekbarVideo.setSecondaryProgress(secondaryBuffer);
+                }else {
+                    seekbarVideo.setSecondaryProgress(0);
+                }
+
+                /*if(isNetUrl && vv.isPlaying()){
+                    int duration=currentPosition-preposition;
+                    if(duration<500){
+                        ll_buffering.setVisibility(View.VISIBLE);
+                    }else {
+                        ll_buffering.setVisibility(View.GONE);
+                    }
+
+                    preposition=currentPosition;
+                }*/
 
                 sendEmptyMessageDelayed(PROGRESS,1000);
                 break;
@@ -296,11 +362,14 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
 
         findViews();
         initData();
+        //设置最大音量和当前进度
+        seekbarVoice.setMax(maxVoice);
+        seekbarVoice.setProgress(currentVoice);
 
-        setListener();
+
         getData();
         setData();
-
+        setListener();
 
 
 
@@ -316,10 +385,12 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
     private void setData() {
         if(mediaItem!=null && mediaItem.size()>0){
             MediaItems mediaItems = mediaItem.get(position);
+            isNetUrl=utils.isNetUri(mediaItems.getData());
             tvName.setText(mediaItems.getName());
             vv.setVideoPath(mediaItems.getData());
         }else if(uri!=null){
             vv.setVideoURI(uri);
+            isNetUrl=utils.isNetUri(uri.toString());
         }
         setButtonStatus();
     }
@@ -393,9 +464,33 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
 
     }
 
+    private float downY;
+    private int   mVoice;
+    private float touchs;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         detector.onTouchEvent(event);
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN :
+                downY=event.getY();
+                mVoice=am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                touchs=Math.min(screenWidth,screenHeight);
+                handler.removeMessages(HIDE_MEDIACONTROLLER);
+                break;
+            case MotionEvent.ACTION_MOVE :
+                float endY=event.getY();
+                float diatenceY=downY-endY;
+                float changeY=(diatenceY/touchs)*mVoice;
+                if(changeY!=0){
+                   int  finalVoice= (int) Math.min(Math.max((mVoice+changeY),0),maxVoice);
+                    updataVoiceProgress(finalVoice);
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
+                break;
+        }
         return super.onTouchEvent(event);
     }
 
@@ -443,16 +538,25 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
 
                 handler.sendEmptyMessage(PROGRESS);
 
+                ll_loading.setVisibility(View.GONE);
+
                 hideMediaController();
                 setVideoType(DEFAULT_SCREEN);
+
+                if(vv.isPlaying()){
+                    //设置暂停
+                    btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
+                }else {
+                    btnStartPause.setBackgroundResource(R.drawable.btn_start_selector);
+                }
             }
         });
         //播放错误监听
         vv.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                Toast.makeText(SystemMediaPlayer.this, "播放出错了", Toast.LENGTH_SHORT).show();
-                return false;
+                startVitamioSystemView();
+                return true;
             }
         });
        //播放完成监听
@@ -503,11 +607,49 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
                 handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
             }
         });
+
+        //设置监听卡顿现象
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1){
+            vv.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                @Override
+                public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                    switch (what) {
+                        case MediaPlayer.MEDIA_INFO_BUFFERING_START :
+                            ll_buffering.setVisibility(View.VISIBLE);
+
+                            break;
+                        case MediaPlayer.MEDIA_INFO_BUFFERING_END :
+                            ll_buffering.setVisibility(View.GONE);
+                            break;
+                    }
+                    return true;
+                }
+            });
+        }
     }
+
+
+   private void startVitamioSystemView(){
+       if(vv!=null){
+           vv.stopPlayback();
+       }
+
+       Intent intent=new Intent(this,VitamioSystemMediaPlayer.class);
+       if(mediaItem!=null && mediaItem.size()>0){
+           Bundle bundle=new Bundle();
+           bundle.putSerializable("videoList",mediaItem);
+           intent.putExtra("position",position);
+           intent.putExtras(bundle);
+
+       }else if(uri!=null){
+           intent.setData(uri);
+       }
+       startActivity(intent);
+       finish();
+   }
 
     private void updataVoiceProgress(int progress) {
         currentVoice=progress;
-        Log.e("TAG","progress="+progress);
         am.setStreamVolume(AudioManager.STREAM_MUSIC,currentVoice,0);
         seekbarVoice.setProgress(currentVoice);
 
@@ -530,4 +672,23 @@ public class SystemMediaPlayer extends AppCompatActivity implements View.OnClick
             receiver=null;
         }
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode==KeyEvent.KEYCODE_VOLUME_DOWN){
+            currentVoice--;
+            updataVoiceProgress(currentVoice);
+            handler.removeMessages(HIDE_MEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
+            return true;
+        }else if(keyCode==KeyEvent.KEYCODE_VOLUME_UP){
+            currentVoice++;
+            updataVoiceProgress(currentVoice);
+            handler.removeMessages(HIDE_MEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
 }

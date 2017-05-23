@@ -197,7 +197,8 @@
 
         <activity android:name=".Media.VitamioSystemView"
             android:screenOrientation="landscape"
-            android:theme="@style/noAnimation_Theme"
+            android:launchMode="singleTask"
+            android:theme="@style/MyTheme"
             >
 
         </activity>

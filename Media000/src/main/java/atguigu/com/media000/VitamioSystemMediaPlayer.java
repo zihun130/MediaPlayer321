@@ -1,6 +1,6 @@
-package atguigu.com.mediaplayer321.Media;
+package atguigu.com.media000;
 
-
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
@@ -30,41 +29,43 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import atguigu.com.mediaplayer321.R;
-import atguigu.com.mediaplayer321.View.VitamioVideoView;
-import atguigu.com.mediaplayer321.domain.MediaItem;
-import atguigu.com.mediaplayer321.utils.Utils;
 import io.vov.vitamio.MediaPlayer;
 import io.vov.vitamio.Vitamio;
 
-public class VitamioSystemView extends AppCompatActivity implements View.OnClickListener {
-
-    private static final int HIDEMEDIACONTROLLER = 1;
+public class VitamioSystemMediaPlayer extends AppCompatActivity implements View.OnClickListener {
+    private static final int HIDE_MEDIACONTROLLER = 1;
+    private static final int DEFAULT_SCREEN = 0;
+    private static final int FULL_SCREEN = 1;
     private static final int SHOW_NET_SPEED = 2;
     private VitamioVideoView vv;
     private Uri uri;
     private Utils utils;
-    private MyBroadCastReceiver receiver;
-    private ArrayList<MediaItem> mediaItems;
+    private  MyBroadCastReceiver receiver;
+    private ArrayList<MediaItems> mediaItem;
+    private int position;
     private GestureDetector detector;
-    private boolean isShowMediaController=false;
+    private boolean isShowMediaController = false;
     //是否全屏
-    private boolean isFullSrceen=false;
-    //屏幕的高与宽；
-    private int screenHeight;
-    private int screenWidth;
-    //原生的高和宽
-    private int videoHeight;
-    private int videoWidth;
-    //判断是否有网络资源
-    private boolean isNetUri;
-    private LinearLayout ll_buffering;
-    private TextView tv_net_speed;
-    private int precurrentPosition;
-
+    private boolean isFullScreen=false;
+    //判断是否有网络
+    private boolean isNetUrl=true;
+    private int     preposition;
     private LinearLayout ll_loading;
     private TextView     tv_loading_net_speed;
+    private LinearLayout ll_buffering;
+    private TextView     tv_net_speed;
 
+
+    private int screenWidth;
+    private int screenHeight;
+    private int videoWidth;
+    private int videoHeight;
+
+    //设置声音的变量
+    private int maxVoice;
+    private int currentVoice;
+    private AudioManager am;
+    private boolean isMute=false;
 
 
     private LinearLayout llTop;
@@ -84,18 +85,11 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
     private Button btnNext;
     private Button btnSwitchScreen;
     private static final int PROGRESS=0;
-    private int position;
-    private static final int  DEFAULT_SCREEN=0;
-    private static final int FULL_SCREEN=1;
-    private int maxVoice;
-    private int currentVoice;
-    private AudioManager am;
-    private boolean isMute=false;
 
     /**
      * Find the Views in the layout<br />
      * <br />
-     * Auto-created on 2017-05-20 11:49:44 by Android Layout Finder
+     * Auto-created on 2017-05-21 17:43:35 by Android Layout Finder
      * (http://www.buzzingandroid.com/tools/android-layout-finder)
      */
     private void findViews() {
@@ -118,10 +112,11 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
         btnNext = (Button)findViewById( R.id.btn_next );
         btnSwitchScreen = (Button)findViewById( R.id.btn_switch_screen );
 
-        ll_buffering = (LinearLayout)findViewById(R.id.ll_buffering);
-        tv_net_speed = (TextView)findViewById(R.id.tv_net_speed);
+
         ll_loading = (LinearLayout)findViewById(R.id.ll_loading);
         tv_loading_net_speed = (TextView)findViewById(R.id.tv_loading_net_speed);
+        ll_buffering = (LinearLayout)findViewById(R.id.ll_buffering);
+        tv_net_speed = (TextView)findViewById(R.id.tv_net_speed);
 
 
         btnVoice.setOnClickListener( this );
@@ -131,49 +126,49 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
         btnStartPause.setOnClickListener( this );
         btnNext.setOnClickListener( this );
         btnSwitchScreen.setOnClickListener( this );
-        //设置最大声音（0-15）
+        //设置最大音量和当前进度
         seekbarVoice.setMax(maxVoice);
         seekbarVoice.setProgress(currentVoice);
+
         handler.sendEmptyMessage(SHOW_NET_SPEED);
     }
 
     /**
      * Handle button click events<br />
      * <br />
-     * Auto-created on 2017-05-20 11:49:44 by Android Layout Finder
+     * Auto-created on 2017-05-21 17:43:35 by Android Layout Finder
      * (http://www.buzzingandroid.com/tools/android-layout-finder)
      */
     @Override
     public void onClick(View v) {
         if ( v == btnVoice ) {
             isMute=!isMute;
-
-            updataVoice(isMute);
+            //updataVoice(isMute);
         } else if ( v == btnSwitchPlayer ) {
-            switchPlayer();
+
+            switchMediaOlayer();
         } else if ( v == btnExit ) {
-           finish();
+            finish();
         } else if ( v == btnPre ) {
-            setPrevideo();
+           setPreVideo();
         } else if ( v == btnStartPause ) {
             setStartOrPause();
         } else if ( v == btnNext ) {
-           setNextvideo();
+            setNextVideo();
         } else if ( v == btnSwitchScreen ) {
-            if(isFullSrceen){
-                //默认
-                setVideoType(DEFAULT_SCREEN);
-            }else {
-                //全屏
-                setVideoType(FULL_SCREEN);
-            }
+           if(isFullScreen){
+               setVideoType(DEFAULT_SCREEN);
+           }else {
+               setVideoType(FULL_SCREEN);
+           }
+
         }
 
-        handler.removeMessages(HIDEMEDIACONTROLLER);
-        handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
+        handler.removeMessages(HIDE_MEDIACONTROLLER);
+        handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
     }
 
-    private void switchPlayer() {
+    private void switchMediaOlayer() {
         new AlertDialog.Builder(this)
                     .setTitle("提示")
                     .setMessage("如果当前为万能播放器播放，当播放有色块，播放质量不好，请切换到系统播放器播放")
@@ -181,28 +176,28 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             startSystemView();
+
                         }
                     })
                     .setNegativeButton("取消", null)
                     .show();
-
     }
 
     private void startSystemView() {
-        if(vv!=null){
+        if(uri!=null){
             vv.stopPlayback();
         }
-        Intent intent=new Intent(this,SystemView.class);
-        if(mediaItems!=null && mediaItems.size()>0){
+        Intent intent=new Intent(this,SystemMediaPlayer.class);
+        if(mediaItem!=null && mediaItem.size()>0){
+
             Bundle bundle=new Bundle();
-            bundle.putSerializable("videoList",mediaItems);
+            bundle.putSerializable("videoList",mediaItem);
             intent.putExtra("position",position);
             intent.putExtras(bundle);
 
         }else if(uri!=null){
             intent.setData(uri);
         }
-
         startActivity(intent);
         finish();
     }
@@ -220,27 +215,26 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
 
     }
 
-    //设置视频的全屏与默认
     private void setVideoType(int videoType) {
         switch (videoType) {
-            case FULL_SCREEN :
-                isFullSrceen=true;
+            case FULL_SCREEN:
+                isFullScreen=true;
+                //默认按钮
                 btnSwitchScreen.setBackgroundResource(R.drawable.btn_switch_screen_default_selector);
+                //设置全屏显示
                 vv.setVideoSize(screenWidth,screenHeight);
-
                 break;
-            case DEFAULT_SCREEN :
-                isFullSrceen=false;
 
+            case DEFAULT_SCREEN:
+                isFullScreen=false;
+                //全屏按钮
                 btnSwitchScreen.setBackgroundResource(R.drawable.btn_switch_screen_full_selector);
-                 //视频原生高与宽
+                //原生宽和高
                 int mVideoWidth=videoWidth;
                 int mVideoHeight=videoHeight;
-                //计算出的显示高与宽
+                //显示的宽和高
                 int width=screenWidth;
                 int height=screenHeight;
-
-
                 if (mVideoWidth * height < width * mVideoHeight) {
                     //Log.i("@@@", "image too wide, correcting");
                     width = height * mVideoWidth / mVideoHeight;
@@ -248,14 +242,14 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
                     //Log.i("@@@", "image too tall, correcting");
                     height = width * mVideoHeight / mVideoWidth;
                 }
+
                 vv.setVideoSize(width,height);
                 break;
         }
 
     }
 
-
-
+    //开始与暂停设置
     private void setStartOrPause() {
         if(vv.isPlaying()){
             vv.pause();
@@ -265,50 +259,191 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
             btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
         }
     }
-
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.vitamio_activity_system_view);
-        vv = (VitamioVideoView)findViewById(R.id.vv_vitamio);
-
-
-        initData();
-        findViews();
-
-        getData();
-        setData();
-
-        setListener();
+    //按钮状态
+    private void setButtonStatus() {
+        if(mediaItem!=null && mediaItem.size()>0){
+            //有视频播放
+            setEnable(true);
+            if(position==0){
+                btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+                setEnable(false);
+            }
+            if(position==mediaItem.size()-1){
+                btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+                setEnable(false);
+            }
+        }else if(uri!=null){
+            setEnable(false);
+        }
 
     }
 
+    private void setEnable(boolean b) {
+        if(b){
+            //上一个和下一个可以点击
+            btnPre.setBackgroundResource(R.drawable.btn_pre_selector);
+            btnNext.setBackgroundResource(R.drawable.btn_next_selector);
+        }else {
+            //上一个和下一个不可以点击
+            btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+            btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+        }
+
+        btnPre.setEnabled(b);
+        btnNext.setEnabled(b);
+    }
+    //下一个视频播放设置
+    private void setNextVideo() {
+        position++;
+        if(position < mediaItem.size()){
+            MediaItems mediaItems = mediaItem.get(position);
+            isNetUrl=utils.isNetUri(mediaItems.getData());
+            vv.setVideoPath(mediaItems.getData());
+            tvName.setText(mediaItems.getName());
+            setButtonStatus();
+        }else {
+            Toast.makeText(VitamioSystemMediaPlayer.this, "退出播放器", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+    }
+    //上一个视频播放设置
+    private void setPreVideo() {
+        position--;
+        if(position >= 0){
+            MediaItems mediaItems = mediaItem.get(position);
+
+            isNetUrl=utils.isNetUri(mediaItems.getData());
+
+            vv.setVideoPath(mediaItems.getData());
+            tvName.setText(mediaItems.getName());
+
+            setButtonStatus();
+        }
+    }
+
+    private Handler handler=new Handler(){
+    @Override
+    public void handleMessage(Message msg) {
+        super.handleMessage(msg);
+        switch (msg.what) {
+            case SHOW_NET_SPEED:
+                if(isNetUrl){
+                    String netSpeed = utils.getNetSpeed(VitamioSystemMediaPlayer.this);
+                    tv_loading_net_speed.setText("正在加载中..."+netSpeed);
+                    tv_net_speed.setText("正在缓冲..."+netSpeed);
+                    handler.sendEmptyMessageDelayed(SHOW_NET_SPEED,1000);
+
+                }
+            case PROGRESS :
+                //得到当前进度
+                int currentPosition = (int) vv.getCurrentPosition();
+                //更新进度
+                seekbarVideo.setProgress(currentPosition);
+                //设置当前时间
+                tvCurrentTime.setText(utils.stringForTime(currentPosition));
+                //设置系统时间
+                tvSystemTime.setText(getSystemTime());
+
+                if(isNetUrl){
+                    int bufferPercentage = vv.getBufferPercentage();
+                    int totalBuffer=bufferPercentage*seekbarVideo.getMax();
+                    int secondaryBuffer=totalBuffer/100;
+                    seekbarVideo.setSecondaryProgress(secondaryBuffer);
+                }else {
+                    seekbarVideo.setSecondaryProgress(0);
+                }
+
+                if(isNetUrl && vv.isPlaying()){
+                    int duration=currentPosition-preposition;
+                    if(duration<500){
+                        ll_buffering.setVisibility(View.VISIBLE);
+                    }else {
+                        ll_buffering.setVisibility(View.GONE);
+                    }
+
+                    preposition=currentPosition;
+                }
+
+                sendEmptyMessageDelayed(PROGRESS,1000);
+                break;
+            case  HIDE_MEDIACONTROLLER:
+                hideMediaController();
+                break;
+        }
+
+    }
+};
+    //得到系统时间
+    private String getSystemTime(){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+        return dateFormat.format(new Date());
+    }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.vitamio_system_media_player);
+        vv = (VitamioVideoView)findViewById(R.id.vv);
+
+        findViews();
+        initData();
+
+        setListener();
+        getData();
+        setData();
+
+
+
+
+    }
+
+    private void getData() {
+        uri=getIntent().getData();
+        mediaItem = (ArrayList<MediaItems>) getIntent().getSerializableExtra("videoList");
+        position=getIntent().getIntExtra("position",0);
+    }
+
+
+    private void setData() {
+        if(mediaItem!=null && mediaItem.size()>0){
+            MediaItems mediaItems = mediaItem.get(position);
+            isNetUrl=utils.isNetUri(mediaItems.getData());
+            tvName.setText(mediaItems.getName());
+            vv.setVideoPath(mediaItems.getData());
+        }else if(uri!=null){
+            vv.setVideoURI(uri);
+            isNetUrl=utils.isNetUri(uri.toString());
+        }
+        setButtonStatus();
+    }
+
+
     private void initData() {
         utils=new Utils();
-        receiver = new MyBroadCastReceiver();
+        //监视电量变化的广播
+         receiver = new MyBroadCastReceiver();
         IntentFilter intentFilter=new IntentFilter();
+        //电量的变化
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
         registerReceiver(receiver,intentFilter);
 
-        //实例化手势识别器
+        //手势识别器的设置
         detector=new GestureDetector(this,new GestureDetector.SimpleOnGestureListener(){
             @Override
             //长按
             public void onLongPress(MotionEvent e) {
-                setStartOrPause();
+                setButtonStatus();
                 super.onLongPress(e);
             }
 
             @Override
             //双击
             public boolean onDoubleTap(MotionEvent e) {
-                if(isFullSrceen){
+                if(isFullScreen){
                     setVideoType(DEFAULT_SCREEN);
                 }else {
                     setVideoType(FULL_SCREEN);
                 }
-
                 return super.onDoubleTap(e);
             }
 
@@ -317,10 +452,10 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
             public boolean onSingleTapConfirmed(MotionEvent e) {
                 if(isShowMediaController){
                     hideMediaController();
-                    handler.sendEmptyMessage(HIDEMEDIACONTROLLER);
+                    handler.sendEmptyMessage(HIDE_MEDIACONTROLLER);
                 }else {
                     showMediaController();
-                    handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
+                    handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
                 }
                 return super.onSingleTapConfirmed(e);
             }
@@ -330,17 +465,30 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         screenHeight = metrics.heightPixels;
         screenWidth = metrics.widthPixels;
+
         //初始化声音
         am= (AudioManager) getSystemService(AUDIO_SERVICE);
         currentVoice=am.getStreamVolume(AudioManager.STREAM_MUSIC);
         maxVoice=am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
     }
-    //坐标
+    //显示视频控制
+    private void showMediaController() {
+        llBottom.setVisibility(View.VISIBLE);
+        llTop.setVisibility(View.VISIBLE);
+        isShowMediaController=true;
+
+    }
+    //隐藏视频控制
+    private void hideMediaController() {
+        llBottom.setVisibility(View.GONE);
+        llTop.setVisibility(View.GONE);
+        isShowMediaController=false;
+
+    }
+
     private float downY;
-    //滑动的初始声音
     private int   mVoice;
-    //滑动的区域
-    private float touchS;
+    private float touchs;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -349,129 +497,26 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
             case MotionEvent.ACTION_DOWN :
                 downY=event.getY();
                 mVoice=am.getStreamVolume(AudioManager.STREAM_MUSIC);
-                touchS=Math.min(screenWidth,screenHeight);
-                handler.removeMessages(HIDEMEDIACONTROLLER);
+                touchs=Math.min(screenWidth,screenHeight);
+                handler.removeMessages(HIDE_MEDIACONTROLLER);
                 break;
             case MotionEvent.ACTION_MOVE :
                 float endY=event.getY();
-                float distanceY=downY-endY;
-                float changeY=(distanceY/touchS)*mVoice;
+                float diatenceY=downY-endY;
+                float changeY=(diatenceY/touchs)*mVoice;
                 if(changeY!=0){
-                    int finalVoice= (int) Math.min(Math.max(mVoice+changeY,0),maxVoice);
+                   int  finalVoice= (int) Math.min(Math.max((mVoice+changeY),0),maxVoice);
                     updataVoiceProgress(finalVoice);
                 }
-
                 break;
-            case MotionEvent.ACTION_UP :
-                handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
-
+            case MotionEvent.ACTION_UP:
+                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
                 break;
         }
         return super.onTouchEvent(event);
     }
 
-    private void hideMediaController(){
-        llBottom.setVisibility(View.INVISIBLE);
-        llTop.setVisibility(View.GONE);
-        isShowMediaController=false;
-    }
-
-    private void showMediaController(){
-        llBottom.setVisibility(View.VISIBLE);
-        llTop.setVisibility(View.VISIBLE);
-        isShowMediaController=true;
-
-    }
-
-    private void getData() {
-        uri = getIntent().getData();
-        mediaItems = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videoList");
-        position=getIntent().getIntExtra("position",0);
-    }
-
-    private void setData() {
-        if(mediaItems!=null && mediaItems.size()>0){
-            MediaItem mediaItem = mediaItems.get(position);
-            //有网时获取网络地址
-            isNetUri=utils.isNetUri(mediaItem.getData());
-            tvName.setText(mediaItem.getName());
-            String data = mediaItem.getData();
-            vv.setVideoPath(data);
-
-        }else if(uri!=null){
-            vv.setVideoURI(uri);
-            //有网时获取网络地址
-            isNetUri=utils.isNetUri(uri.toString());
-            tvName.setText(uri.toString());
-
-
-        }
-       setButtonStatus();
-
-    }
-
-    private void setButtonStatus() {
-        if(mediaItems!=null && mediaItems.size()>0){
-            setEnable(true);
-            if(position==0){
-                btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
-                btnPre.setEnabled(false);
-            }
-            if(position==mediaItems.size()-1){
-                btnNext.setBackgroundResource(R.drawable.btn_next_gray);
-                btnNext.setEnabled(false);
-            }
-        }else if(uri!=null){
-            setEnable(false);
-        }
-    }
-
-    private void setEnable(boolean b) {
-        if(b){
-            btnPre.setBackgroundResource(R.drawable.btn_pre_selector);
-            btnNext.setBackgroundResource(R.drawable.btn_next_selector);
-        }else{
-            btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
-            btnNext.setBackgroundResource(R.drawable.btn_next_gray);
-        }
-
-        btnPre.setEnabled(b);
-        btnNext.setEnabled(b);
-    }
-
-
-    private void setNextvideo() {
-        position++;
-        if(position < mediaItems.size()){
-            MediaItem mediaItem = mediaItems.get(position);
-            ll_loading.setVisibility(View.VISIBLE);
-            vv.setVideoPath(mediaItem.getData());
-            tvName.setText(mediaItem.getName());
-            //有网时获取网络地址
-            isNetUri=utils.isNetUri(mediaItem.getData());
-            setButtonStatus();
-        }else {
-            Toast.makeText(VitamioSystemView.this, "退出播放器", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-    }
-
-    private void setPrevideo() {
-        position--;
-        //列表是从0开始的。所以要有等于0。
-        if(position >=0){
-            MediaItem mediaItem = mediaItems.get(position);
-            ll_loading.setVisibility(View.VISIBLE);
-            vv.setVideoPath(mediaItem.getData());
-            tvName.setText(mediaItem.getName());
-            //有网时获取网络地址
-            isNetUri=utils.isNetUri(mediaItem.getData());
-            setButtonStatus();
-        }
-    }
-
-
-    class MyBroadCastReceiver extends BroadcastReceiver {
+    class MyBroadCastReceiver extends BroadcastReceiver{
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -481,79 +526,22 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
     }
 
     private void setBatteryView(int level) {
-        if(level <=0){
+        if(level<=0){
             ivBattery.setImageResource(R.drawable.ic_battery_0);
-        }else if(level <= 10){
+        }else if(level<=10){
             ivBattery.setImageResource(R.drawable.ic_battery_10);
-        }else if(level <=20){
+        }else if(level<=20){
             ivBattery.setImageResource(R.drawable.ic_battery_20);
-        }else if(level <=40){
+        }else if(level<=40){
             ivBattery.setImageResource(R.drawable.ic_battery_40);
-        }else if(level <=60){
+        }else if(level<=60){
             ivBattery.setImageResource(R.drawable.ic_battery_60);
-        }else if(level <=80){
+        }else if(level<=80){
             ivBattery.setImageResource(R.drawable.ic_battery_80);
-        }else if(level <=100){
-            ivBattery.setImageResource(R.drawable.ic_battery_100);
-        }else {
+        }else if(level<=100){
             ivBattery.setImageResource(R.drawable.ic_battery_100);
         }
-    }
 
-    private Handler handler=new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what) {
-                case SHOW_NET_SPEED:
-                    if(isNetUri){
-                        String netSpeed = utils.getNetSpeed(VitamioSystemView.this);
-                        tv_loading_net_speed.setText("正在加载中..."+netSpeed);
-                        tv_net_speed.setText("正在缓冲..."+netSpeed);
-                        sendEmptyMessageDelayed(SHOW_NET_SPEED,1000);
-
-                    }
-                    break;
-                case PROGRESS:
-                    int currentPosition = (int) vv.getCurrentPosition();
-                    seekbarVideo.setProgress(currentPosition);
-
-                    tvCurrentTime.setText(utils.stringForTime(currentPosition));
-
-                    tvSystemTime.setText(getSystemTime());
-                    //设置视频缓存效果
-                    if(isNetUri){
-                        int bufferPercentage = vv.getBufferPercentage();//0~100;
-                        int totalBuffer = bufferPercentage*seekbarVideo.getMax();
-                        int secondaryProgress =totalBuffer/100;
-                        seekbarVideo.setSecondaryProgress(secondaryProgress);
-                    }else{
-                        seekbarVideo.setSecondaryProgress(0);
-                    }
-
-                    //设置缓存指示图
-                    if(isNetUri && vv.isPlaying()){
-                        int duration=currentPosition-precurrentPosition;
-                        if(duration<500){
-                            ll_buffering.setVisibility(View.VISIBLE);
-                        }else {
-                            ll_buffering.setVisibility(View.GONE);
-                        }
-                        precurrentPosition=currentPosition;
-                    }
-                    sendEmptyMessageDelayed(PROGRESS,1000);
-                    break;
-                case HIDEMEDIACONTROLLER:
-                    hideMediaController();
-                    break;
-            }
-
-        }
-    };
-
-    private String getSystemTime() {
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
-        return format.format(new Date());
     }
 
     private void setListener() {
@@ -561,15 +549,18 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
         vv.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
-                videoWidth=mp.getVideoWidth();
-                videoHeight=mp.getVideoHeight();
-
-                int duration = (int) vv.getDuration();
+                videoWidth = mp.getVideoWidth();
+                videoHeight = mp.getVideoHeight();
+                //文本总时间
+                int duration= (int) vv.getDuration();
                 seekbarVideo.setMax(duration);
+                //设置文本时间
                 tvDuration.setText(utils.stringForTime(duration));
                 vv.start();
+
                 handler.sendEmptyMessage(PROGRESS);
-                ll_loading.setVisibility(View.GONE);
+
+                ll_buffering.setVisibility(View.GONE);
 
                 hideMediaController();
                 setVideoType(DEFAULT_SCREEN);
@@ -586,18 +577,19 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
         vv.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                showErrorDialog();
+                Toast.makeText(VitamioSystemMediaPlayer.this, "播放出错了", Toast.LENGTH_SHORT).show();
                 return false;
             }
         });
-        //播放完成监听
+       //播放完成监听
         vv.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-               setNextvideo();
+                setNextVideo();
             }
         });
-        //设置视频变化的监听
+
+        //seekbarVideo状态的变化的监听
         seekbarVideo.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -608,33 +600,33 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                handler.removeMessages(HIDEMEDIACONTROLLER);
+                handler.removeMessages(HIDE_MEDIACONTROLLER);
+
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
+                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
 
             }
         });
-
-        //设置声音拖动监听
+        //拖动监听声音
         seekbarVoice.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(fromUser){
-                    updataVoiceProgress(progress);
-                }
+              if(fromUser){
+                  updataVoiceProgress(progress);
+              }
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                handler.removeMessages(HIDEMEDIACONTROLLER);
+                handler.removeMessages(HIDE_MEDIACONTROLLER);
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
+                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
             }
         });
 
@@ -644,7 +636,7 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
                 public boolean onInfo(MediaPlayer mp, int what, int extra) {
                     switch (what) {
                         case MediaPlayer.MEDIA_INFO_BUFFERING_START :
-                         ll_buffering.setVisibility(View.VISIBLE);
+                            ll_buffering.setVisibility(View.VISIBLE);
                             break;
                         case MediaPlayer.MEDIA_INFO_BUFFERING_END :
                             ll_buffering.setVisibility(View.GONE);
@@ -655,24 +647,8 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
                 }
             });
         }
-
     }
 
-    private void showErrorDialog() {
-        new AlertDialog.Builder(this)
-                    .setTitle("提示")
-                    .setMessage("当前视频不可播放，请检查网络或者视频文件是否有损坏！")
-                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            finish();
-                        }
-                    })
-                    .setNegativeButton("取消", null)
-                    .show();
-    }
-
-    //声音滑动的变化
     private void updataVoiceProgress(int progress) {
         currentVoice=progress;
         am.setStreamVolume(AudioManager.STREAM_MUSIC,currentVoice,0);
@@ -685,19 +661,17 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
         }
     }
 
-
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         if(handler!=null){
             handler.removeCallbacksAndMessages(null);
             handler=null;
         }
-
         if(receiver!=null){
             unregisterReceiver(receiver);
             receiver=null;
         }
-        super.onDestroy();
     }
 
     @Override
@@ -705,16 +679,17 @@ public class VitamioSystemView extends AppCompatActivity implements View.OnClick
         if(keyCode==KeyEvent.KEYCODE_VOLUME_DOWN){
             currentVoice--;
             updataVoiceProgress(currentVoice);
-            handler.removeMessages(HIDEMEDIACONTROLLER);
-            handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
+            handler.removeMessages(HIDE_MEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
             return true;
         }else if(keyCode==KeyEvent.KEYCODE_VOLUME_UP){
             currentVoice++;
             updataVoiceProgress(currentVoice);
-            handler.removeMessages(HIDEMEDIACONTROLLER);
-            handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,4000);
+            handler.removeMessages(HIDE_MEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
             return true;
         }
         return super.onKeyDown(keyCode, event);
     }
+
 }
