@@ -57,7 +57,7 @@ public class NetVideoAdapter extends BaseAdapter {
         if(convertView==null){
             convertView=View.inflate(context, R.layout.netvideo_item,null);
             viewHolder=new ViewHolder();
-            viewHolder.iv_icon= (ImageView) convertView.findViewById(R.id.iv_icon);
+            viewHolder.iv_icon= (ImageView) convertView.findViewById(R.id.iv_net_icon);
             viewHolder.tv_name= (TextView) convertView.findViewById(R.id.tv_name);
             viewHolder.tv_duration= (TextView) convertView.findViewById(R.id.tv_duration);
             viewHolder.tv_size= (TextView) convertView.findViewById(R.id.tv_size);

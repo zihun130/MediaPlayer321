@@ -33,7 +33,7 @@ public class LocalAudioPager extends BaseFragment implements AdapterView.OnItemC
 
     @Override
     public View initview() {
-        View view= View.inflate(context, R.layout.fragment_local_audio_pager,null);
+        View view= View.inflate(context, R.layout.fragment_local_video_pager,null);
         lv_local_video_pager = (ListView) view.findViewById(R.id.lv_local_video_pager);
         tv_nodata = (TextView) view.findViewById(R.id.tv_nodata);
         lv_local_video_pager.setOnItemClickListener(this);
@@ -56,7 +56,7 @@ public class LocalAudioPager extends BaseFragment implements AdapterView.OnItemC
 
                 tv_nodata.setVisibility(View.GONE);
 
-                adapter = new LocalVideoAdapter(context,mediaItems);
+                adapter = new LocalVideoAdapter(context,mediaItems,false);
                 lv_local_video_pager.setAdapter(adapter);
             }else{
                 tv_nodata.setVisibility(View.VISIBLE);

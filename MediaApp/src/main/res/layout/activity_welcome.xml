@@ -8,14 +8,14 @@
     tools:context="atguigu.com.mediaplayer321.WelcomeActivity">
 
    <ImageView
-       android:id="@+id/iv_icon"
+       android:id="@+id/iv_wel_icon"
        android:layout_centerInParent="true"
        android:src="@drawable/login_icon"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content" />
     <LinearLayout
         android:gravity="center"
-        android:layout_below="@id/iv_icon"
+        android:layout_below="@id/iv_wel_icon"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

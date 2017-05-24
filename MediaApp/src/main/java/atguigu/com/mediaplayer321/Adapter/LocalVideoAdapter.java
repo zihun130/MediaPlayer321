@@ -22,12 +22,12 @@ public class LocalVideoAdapter extends BaseAdapter {
     private Context context;
     private ArrayList<MediaItem> mediaItems;
     private Utils  utils;
-    private boolean isVideo;
+    private final boolean isVideo;
     public LocalVideoAdapter(Context context, ArrayList<MediaItem> mediaItems,boolean b) {
         this.context=context;
         this.mediaItems=mediaItems;
-        this.isVideo=b;
         utils = new Utils();
+        this.isVideo=b;
     }
 
     @Override
@@ -68,7 +68,6 @@ public class LocalVideoAdapter extends BaseAdapter {
 
         if(!isVideo){
             viewHolder.iv_icon.setImageResource(R.drawable.music_default_bg);
-
         }
 
         return convertView;

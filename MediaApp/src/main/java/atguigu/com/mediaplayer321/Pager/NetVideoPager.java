@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import atguigu.com.mediaplayer321.Adapter.NetVideoAdapter;
-import atguigu.com.mediaplayer321.Media.VitamioSystemView;
+import atguigu.com.mediaplayer321.Media.SystemView;
 import atguigu.com.mediaplayer321.R;
 import atguigu.com.mediaplayer321.domain.MediaItem;
 import atguigu.com.mediaplayer321.domain.MoiveInfo;
@@ -41,7 +41,7 @@ public class NetVideoPager extends BaseFragment {
     private boolean isloadMore = false;
     private List<MoiveInfo.TrailersBean> trailers;
     private SharedPreferences  sp;
-    private String uri="http://api.m.mtime.cn/PageSubArea/TrailerList.api";
+    private static final String uri="http://api.m.mtime.cn/PageSubArea/TrailerList.api";
 
     @Override
     public View initview() {
@@ -75,7 +75,7 @@ public class NetVideoPager extends BaseFragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //MoiveInfo.TrailersBean item = adapter.getItem(position);
 
-                Intent intent = new Intent(context, VitamioSystemView.class);
+                Intent intent = new Intent(context, SystemView.class);
                 Bundle bundle = new Bundle();
                 bundle.putSerializable("videoList", mediaItems);
                 intent.putExtra("position", position);
