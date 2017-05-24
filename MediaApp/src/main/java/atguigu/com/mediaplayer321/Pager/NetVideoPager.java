@@ -1,6 +1,8 @@
 package atguigu.com.mediaplayer321.Pager;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -37,12 +39,15 @@ public class NetVideoPager extends BaseFragment {
     private MaterialRefreshLayout materialRefreshLayout;
     private boolean isloadMore = false;
     private List<MoiveInfo.TrailersBean> trailers;
+    private SharedPreferences  sp;
 
     @Override
     public View initview() {
         View view = View.inflate(context, R.layout.fragment_net_video_pager, null);
         lv_net_video_pager = (ListView) view.findViewById(R.id.lv_net_video_pager);
         tv_nodata = (TextView) view.findViewById(R.id.tv_nodata);
+        sp=context.getSharedPreferences("atguigu", Context.MODE_PRIVATE);
+
 
         materialRefreshLayout = (MaterialRefreshLayout) view.findViewById(R.id.refresh);
 
@@ -95,6 +100,9 @@ public class NetVideoPager extends BaseFragment {
             @Override
             public void onSuccess(String s) {
                 processedata(s);
+                SharedPreferences.Editor edit = sp.edit();
+                edit.putString("Json",s);
+                edit.commit();
                 materialRefreshLayout.finishRefresh();
             }
 
