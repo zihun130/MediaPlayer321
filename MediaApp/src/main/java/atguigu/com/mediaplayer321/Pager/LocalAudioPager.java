@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -16,7 +15,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import atguigu.com.mediaplayer321.Adapter.LocalVideoAdapter;
-import atguigu.com.mediaplayer321.Media.SystemView;
+import atguigu.com.mediaplayer321.Media.SystemAudioView;
 import atguigu.com.mediaplayer321.R;
 import atguigu.com.mediaplayer321.domain.MediaItem;
 import atguigu.com.mediaplayer321.fragment.BaseFragment;
@@ -100,12 +99,12 @@ public class LocalAudioPager extends BaseFragment implements AdapterView.OnItemC
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         //MediaItem item = (MediaItem) adapter.getItem(position);
-        Intent intent=new Intent(context,SystemView.class);
+        Intent intent=new Intent(context,SystemAudioView.class);
 
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("videoList",mediaItems);
+        //Bundle bundle = new Bundle();
+        //bundle.putSerializable("videoList",mediaItems);
         intent.putExtra("position",position);
-        intent.putExtras(bundle);
+        intent.putExtra("notification",false);
         //intent.setDataAndType(Uri.parse(item.getData()),"video/*");
         startActivity(intent);
     }

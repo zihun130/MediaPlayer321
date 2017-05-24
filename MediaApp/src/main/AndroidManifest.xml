@@ -2,10 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="atguigu.com.mediaplayer321">
 
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -201,12 +200,18 @@
             android:launchMode="singleTask"
             android:screenOrientation="landscape"
             android:theme="@style/noAnimation_Theme" />
-        <activity android:name=".Media.SystemAudioView" />
+        <activity android:name=".Media.SystemAudioView"
+            android:launchMode="singleTask"
+            />
 
         <service
             android:name=".Service.AudioService"
             android:enabled="true"
             android:exported="true">
+
+            <intent-filter>
+                <action android:name="atguigu.com.mediaplayer321.Service.AUDIOSERVICE"/>
+            </intent-filter>
 
         </service>
     </application>
