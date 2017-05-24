@@ -11,7 +11,7 @@
         android:layout_centerVertical="true"
         android:layout_marginLeft="8dp"
         android:scaleType="fitXY"
-        android:src="@drawable/login_icon" />
+        android:src="@drawable/video_default" />
 
 
     <LinearLayout

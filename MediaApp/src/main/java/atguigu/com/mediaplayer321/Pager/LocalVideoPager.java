@@ -56,7 +56,7 @@ public class LocalVideoPager extends BaseFragment implements AdapterView.OnItemC
 
                 tv_nodata.setVisibility(View.GONE);
 
-                adapter = new LocalVideoAdapter(context,mediaItems);
+                adapter = new LocalVideoAdapter(context,mediaItems,true);
                 lv_local_video_pager.setAdapter(adapter);
             }else{
                 tv_nodata.setVisibility(View.VISIBLE);

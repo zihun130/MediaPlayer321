@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -40,6 +41,7 @@ public class NetVideoPager extends BaseFragment {
     private boolean isloadMore = false;
     private List<MoiveInfo.TrailersBean> trailers;
     private SharedPreferences  sp;
+    private String uri="http://api.m.mtime.cn/PageSubArea/TrailerList.api";
 
     @Override
     public View initview() {
@@ -90,24 +92,31 @@ public class NetVideoPager extends BaseFragment {
     @Override
     public void initdata() {
         super.initdata();
+        String string = sp.getString(uri, "");
+        if(!TextUtils.isEmpty(string)){
+            processedata(string);
+        }
+
         getData();
     }
 
     private void getData() {
-        final RequestParams request = new RequestParams("http://api.m.mtime.cn/PageSubArea/TrailerList.api");
+        final RequestParams request = new RequestParams(uri);
         x.http().get(request, new Callback.CommonCallback<String>() {
 
             @Override
             public void onSuccess(String s) {
                 processedata(s);
                 SharedPreferences.Editor edit = sp.edit();
-                edit.putString("Json",s);
+                edit.putString(uri,s);
                 edit.commit();
                 materialRefreshLayout.finishRefresh();
             }
 
             @Override
             public void onError(Throwable throwable, boolean b) {
+                sp.getString("Json",null);
+
 
             }
 
@@ -165,7 +174,7 @@ public class NetVideoPager extends BaseFragment {
 
 
     private void getLoadMore() {
-        final RequestParams request = new RequestParams("http://api.m.mtime.cn/PageSubArea/TrailerList.api");
+        final RequestParams request = new RequestParams(uri);
         x.http().get(request, new Callback.CommonCallback<String>() {
 
             @Override
