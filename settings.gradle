@@ -1,2 +1,2 @@
-include ':MediaApp', ':Media000', ':Media001', ':Media002', ':Media005', ':StartAllMediaPlayer', ':vitamio-sample', ':vitamio', ':StartLocalMediaPlayer'
+include ':MediaApp', ':Media000', ':Media005', ':StartAllMediaPlayer', ':vitamio-sample', ':vitamio', ':StartLocalMediaPlayer', ':MediaPlayer001'
 

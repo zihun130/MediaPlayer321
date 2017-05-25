@@ -274,6 +274,7 @@ public class AudioService extends Service {
 
     //得到当前进度
     private int getCurrentPosition(){
+
         return mediaPlayer.getCurrentPosition();
     }
 
