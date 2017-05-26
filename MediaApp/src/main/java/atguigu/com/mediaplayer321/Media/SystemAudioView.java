@@ -20,13 +20,25 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.io.File;
+import java.util.ArrayList;
+
 import atguigu.com.mediaplayer321.IAudioService;
 import atguigu.com.mediaplayer321.R;
 import atguigu.com.mediaplayer321.Service.AudioService;
+import atguigu.com.mediaplayer321.View.ScrollContentView;
+import atguigu.com.mediaplayer321.domain.ContentInfo;
+import atguigu.com.mediaplayer321.domain.MediaItem;
+import atguigu.com.mediaplayer321.utils.LyricsUtils;
 import atguigu.com.mediaplayer321.utils.Utils;
 
 public class SystemAudioView extends AppCompatActivity implements View.OnClickListener {
 
+    private static final int SHOW_CONTENT = 1;
     private RelativeLayout rlTop;
     private ImageView ivAudioIcon;
     private TextView tvArtist;
@@ -39,6 +51,9 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
     private Button btnStartPause;
     private Button btnNext;
     private Button btnLyric;
+
+
+    private ScrollContentView scv_content;
 
     private IAudioService  service;
     private int position;
@@ -54,6 +69,21 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
+
+                case SHOW_CONTENT:
+                    try {
+                        int currentPosition = service.getCurrentPosition();
+
+                        scv_content.setNextContent(currentPosition);
+
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+
+                    removeMessages(SHOW_CONTENT);
+                    sendEmptyMessage(SHOW_CONTENT);
+
+
                 case  PROGRESS:
 
                     try {
@@ -83,7 +113,7 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
 
                     try {
                         if(notification){
-                            setViewData();
+                            setViewData(null);
                         }else {
 
                             service.openAudio(position);
@@ -121,6 +151,9 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
         btnLyric = (Button)findViewById( R.id.btn_lyric );
         seekbarAudio = (SeekBar)findViewById(R.id.seekbarAudio);
 
+
+        scv_content = (ScrollContentView)findViewById(R.id.scv_content);
+
         btnPlaymode.setOnClickListener( this );
         btnPre.setOnClickListener( this );
         btnStartPause.setOnClickListener( this );
@@ -132,6 +165,7 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
                 if(fromUser){
                     try {
                         service.seekTo(progress);
+
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
@@ -247,12 +281,15 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
         registerReceiver(receiver,intentFilter);
 
         utils=new Utils();
+
+
+        EventBus.getDefault().register(this);
     }
 
     private class Myreceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
-            setViewData();
+            //setViewData(null);
         }
     }
 
@@ -263,7 +300,10 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
             position=getIntent().getIntExtra("position",0);
         }
     }
-    private void setViewData() {
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void setViewData(MediaItem mediaItem) {
 
         try {
             setBottonImage();
@@ -271,25 +311,62 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
             tvAudioname.setText(service.getAudioName());
             int duration=service.getDuration();
             seekbarAudio.setMax(duration);
+
+
+
+            //解析歌词
+            //1.得到歌词所在路径
+            String audioPath = service.getAudioPath();//mnt/sdcard/audio/beijingbeijing.mp3
+
+            String lyricPath = audioPath.substring(0,audioPath.lastIndexOf("."));//mnt/sdcard/audio/beijingbeijing
+            File file = new File(lyricPath+".lrc");
+            if(!file.exists()){
+                file = new File(lyricPath+".txt");
+            }
+            LyricsUtils lyricsUtils = new LyricsUtils();
+            lyricsUtils.readFile(file);
+
+            //2.传入解析歌词的工具类
+            ArrayList<ContentInfo> lyrics = lyricsUtils.getLyrics();
+            scv_content.setLyrics(lyrics);
+
+            //3.如果有歌词，就歌词同步
+
+            if(lyricsUtils.isLyric()){
+                handler.sendEmptyMessage(SHOW_CONTENT);
+            }
+
+
+
         } catch (RemoteException e) {
             e.printStackTrace();
         }
 
         handler.sendEmptyMessage(PROGRESS);
+
+
+
     }
 
     @Override
     protected void onDestroy() {
 
-        if(handler!=null){
-            handler.removeCallbacksAndMessages(null);
-            handler=null;
+        if(conn!=null){
+            unbindService(conn);
+            conn=null;
         }
 
         if(receiver!=null){
             unregisterReceiver(receiver);
             receiver=null;
         }
+
+        if(handler!=null){
+            handler.removeCallbacksAndMessages(null);
+        }
+
+
+        EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
 

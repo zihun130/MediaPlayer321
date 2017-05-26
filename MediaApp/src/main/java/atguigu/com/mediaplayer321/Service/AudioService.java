@@ -15,6 +15,8 @@ import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -264,7 +266,7 @@ public class AudioService extends Service {
 
     //得到路径
     private String getAudioPath(){
-        return "";
+        return mediaItem.getData();
     }
 
     //得到总时长
@@ -388,7 +390,8 @@ public class AudioService extends Service {
         @Override
         public void onPrepared(MediaPlayer mp) {
 
-            notifyChange(OPEN_COMPLETE);
+            //notifyChange(OPEN_COMPLETE);
+            EventBus.getDefault().post(mediaItem);
             start();
 
         }

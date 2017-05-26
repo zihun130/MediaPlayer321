@@ -24,7 +24,7 @@ import atguigu.com.mediaplayer321.fragment.BaseFragment;
  * Created by sun on 2017/5/19.
  */
 
-public class LocalAudioPager extends BaseFragment implements AdapterView.OnItemClickListener {
+public class  LocalAudioPager extends BaseFragment implements AdapterView.OnItemClickListener {
     private ListView lv_local_video_pager;
     private TextView tv_nodata;
     private ArrayList<MediaItem> mediaItems;

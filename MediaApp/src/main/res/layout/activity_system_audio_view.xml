@@ -113,5 +113,12 @@
 
     </LinearLayout>
 
+    <atguigu.com.mediaplayer321.View.ScrollContentView
+        android:layout_below="@id/rl_top"
+        android:layout_above="@id/ll_audio_bottom"
+        android:id="@+id/scv_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
 
 </RelativeLayout>
