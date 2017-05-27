@@ -115,7 +115,7 @@ public class LyricsUtils {
 
                 if (pos1 == 0 && pos2 != -1) {
 
-                    timeStr = line.substring(pos1 + 1, pos2);//03:37.32-->00:59.73
+                    timeStr = content.substring(pos1 + 1, pos2);//03:37.32-->00:59.73
                     //解析第1句
                     timeLongs[i] = stringToLong(timeStr);
 

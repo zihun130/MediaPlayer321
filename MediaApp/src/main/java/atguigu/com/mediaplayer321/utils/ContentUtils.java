@@ -1,5 +1,6 @@
 package atguigu.com.mediaplayer321.utils;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,7 +42,7 @@ public class ContentUtils {
             try {
 
                 fis=new FileInputStream(file);
-                InputStreamReader isr=new InputStreamReader(fis,"GBK");
+                InputStreamReader isr=new InputStreamReader(fis,getCharset(file));
                 BufferedReader    buff=new BufferedReader(isr);
                 String line;
                 while ((line=buff.readLine())!=null){
@@ -78,13 +79,74 @@ public class ContentUtils {
         }
     }
 
+    private String getCharset(File file) {
+
+        String charset = "GBK";
+        byte[] first3Bytes = new byte[3];
+        try {
+            boolean checked = false;
+            BufferedInputStream bis = new BufferedInputStream(
+                    new FileInputStream(file));
+            bis.mark(0);
+            int read = bis.read(first3Bytes, 0, 3);
+            if (read == -1)
+                return charset;
+            if (first3Bytes[0] == (byte) 0xFF && first3Bytes[1] == (byte) 0xFE) {
+                charset = "UTF-16LE";
+                checked = true;
+            } else if (first3Bytes[0] == (byte) 0xFE
+                    && first3Bytes[1] == (byte) 0xFF) {
+                charset = "UTF-16BE";
+                checked = true;
+            } else if (first3Bytes[0] == (byte) 0xEF
+                    && first3Bytes[1] == (byte) 0xBB
+                    && first3Bytes[2] == (byte) 0xBF) {
+                charset = "UTF-8";
+                checked = true;
+            }
+            bis.reset();
+            if (!checked) {
+                int loc = 0;
+                while ((read = bis.read()) != -1) {
+                    loc++;
+                    if (read >= 0xF0)
+                        break;
+                    if (0x80 <= read && read <= 0xBF)
+                        break;
+                    if (0xC0 <= read && read <= 0xDF) {
+                        read = bis.read();
+                        if (0x80 <= read && read <= 0xBF)
+                            continue;
+                        else
+                            break;
+                    } else if (0xE0 <= read && read <= 0xEF) {
+                        read = bis.read();
+                        if (0x80 <= read && read <= 0xBF) {
+                            read = bis.read();
+                            if (0x80 <= read && read <= 0xBF) {
+                                charset = "UTF-8";
+                                break;
+                            } else
+                                break;
+                        } else
+                            break;
+                    }
+                }
+            }
+            bis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return charset;
+    }
 
 
+    //解析读取到的一行
     private void analyzeLyric(String line) {
         int post1=line.indexOf("[");//0 子串在字符串中的第一个坐标
         int post2=line.indexOf("]");//9
-        if(post1==0 && post2!=-1){//至少有一句歌词
-            //装Longs的时间戳数组
+        if(post1==0 && post2!=-1){
             long[] tempLongs=new long[getContentTag(line)];
             String trimStr=line.substring(post1+1,post2);//截取02:04.12;
             //解析第0句
@@ -111,7 +173,7 @@ public class ContentUtils {
                     if(tempLongs[i]==-1){
                         return;
                     }
-                    i++;
+                    i++;//不断叠加
                 }
 
             }
@@ -140,6 +202,7 @@ public class ContentUtils {
             String[] s1 = trimStr.split(":");//把字符串以 : 分割
             String[] s2 = s1[1].split("."); //将第一个数组的第二个子串再以 . 分割
 
+             //提取时间中的各部分的值
             long min=Long.valueOf(s1[0]);
             long second=Long.valueOf(s2[0]);
             long mil=Long.valueOf(s2[1]);

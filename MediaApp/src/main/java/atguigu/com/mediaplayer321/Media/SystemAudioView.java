@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.media.audiofx.Visualizer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import atguigu.com.mediaplayer321.IAudioService;
 import atguigu.com.mediaplayer321.R;
 import atguigu.com.mediaplayer321.Service.AudioService;
+import atguigu.com.mediaplayer321.View.BaseVisualizerView;
 import atguigu.com.mediaplayer321.View.ScrollContentView;
 import atguigu.com.mediaplayer321.domain.ContentInfo;
 import atguigu.com.mediaplayer321.domain.MediaItem;
@@ -59,6 +61,9 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
     private int position;
     private Myreceiver receiver;
     private Utils utils;
+
+    private BaseVisualizerView visualizerview;
+    private Visualizer mVisualizer;
 
     private final static int PROGRESS=0;
 
@@ -131,6 +136,7 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
         }
     };
 
+
     /**
      * Find the Views in the layout<br />
      * <br />
@@ -150,6 +156,8 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
         btnNext = (Button)findViewById( R.id.btn_next );
         btnLyric = (Button)findViewById( R.id.btn_lyric );
         seekbarAudio = (SeekBar)findViewById(R.id.seekbarAudio);
+
+        visualizerview = (BaseVisualizerView)findViewById(R.id.visualizerview);
 
 
         scv_content = (ScrollContentView)findViewById(R.id.scv_content);
@@ -331,7 +339,6 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
             scv_content.setLyrics(lyrics);
 
             //3.如果有歌词，就歌词同步
-
             if(lyricsUtils.isLyric()){
                 handler.sendEmptyMessage(SHOW_CONTENT);
             }
@@ -343,10 +350,37 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
         }
 
         handler.sendEmptyMessage(PROGRESS);
-
-
+       //显示音乐频谱
+        setupVisualizerFxAndUi();
 
     }
+
+    private void setupVisualizerFxAndUi() {
+        int audioSessionid = 0;
+        try {
+            audioSessionid = service.getAudioSessionId();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        System.out.println("audioSessionid==" + audioSessionid);
+        mVisualizer = new Visualizer(audioSessionid);
+        // 参数内必须是2的位数
+        mVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+        // 设置允许波形表示，并且捕获它
+        visualizerview.setVisualizer(mVisualizer);
+        mVisualizer.setEnabled(true);
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (isFinishing()) {
+            mVisualizer.release();
+        }
+    }
+
+
 
     @Override
     protected void onDestroy() {

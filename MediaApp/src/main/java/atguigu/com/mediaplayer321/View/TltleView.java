@@ -1,6 +1,7 @@
 package atguigu.com.mediaplayer321.View;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
@@ -9,6 +10,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import atguigu.com.mediaplayer321.Media.SpeechVoiceActivity;
 import atguigu.com.mediaplayer321.R;
 
 /**
@@ -43,7 +45,8 @@ public class TltleView extends LinearLayout implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_sousuo :
-                Toast.makeText(context, "搜索", Toast.LENGTH_SHORT).show();
+                Intent  intent=new Intent(context,SpeechVoiceActivity.class);
+                context.startActivity(intent);
 
                 break;
 

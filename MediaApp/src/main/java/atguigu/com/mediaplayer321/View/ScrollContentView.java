@@ -10,12 +10,14 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import atguigu.com.mediaplayer321.domain.ContentInfo;
+import atguigu.com.mediaplayer321.utils.DensityUtil;
 
 /**
  * Created by sun on 2017/5/26.
  */
 
 public class ScrollContentView extends TextView {
+    private final Context context;
     private Paint paintGreen;
     private Paint paintWhite;
     private int width;
@@ -23,10 +25,13 @@ public class ScrollContentView extends TextView {
     private ArrayList<ContentInfo> contentInfo;
     private int index = 0;
     private float textHeight = 20;
-    private int currentPosition;
+    private float currentPosition;
+    private long timepoint;
+    private long sleeptime;
 
     public ScrollContentView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        this.context=context;
         initView();
     }
 
@@ -40,16 +45,19 @@ public class ScrollContentView extends TextView {
 
 
     private void initView() {
+
+       textHeight= DensityUtil.dip2px(context, 20);
+
         paintGreen = new Paint();
         paintGreen.setColor(Color.GREEN);
-        paintGreen.setTextSize(18);
+        paintGreen.setTextSize(DensityUtil.dip2px(context, 18));
         paintGreen.setAntiAlias(true);
         paintGreen.setTextAlign(Paint.Align.CENTER);
 
 
         paintWhite = new Paint();
         paintWhite.setColor(Color.WHITE);
-        paintWhite.setTextSize(18);
+        paintWhite.setTextSize(DensityUtil.dip2px(context, 18));
         paintWhite.setAntiAlias(true);
         paintWhite.setTextAlign(Paint.Align.CENTER);
 
@@ -74,24 +82,39 @@ public class ScrollContentView extends TextView {
         super.onDraw(canvas);
         if (contentInfo != null && contentInfo.size() > 0) {
 
-            String currcontent = contentInfo.get(index).getContent();
-            canvas.drawText(currcontent, width / 2, height / 2, paintGreen);
+            //设置歌词平滑的上移
+            if(index != contentInfo.size()-1){
+                float push = 0;
 
-            float tempY = height / 2;
-            for (int i = index - 1; i >= 0; i--) {
-
-                String precontent = contentInfo.get(i).getContent();
-
-                tempY = tempY - textHeight;
-
-                if (tempY < 0) {
-                    break;
+                if (sleeptime == 0) {
+                    push = 0;
+                } else {
+                    // 这一句花的时间： 这一句休眠时间  =  这一句要移动的距离：总距离(行高)
+                    //这一句要移动的距离 = （这一句花的时间/这一句休眠时间） * 总距离(行高)
+                    push = ((currentPosition - timepoint) / sleeptime) * textHeight;
                 }
-                canvas.drawText(precontent, width / 2, tempY, paintWhite);
-
+                canvas.translate(0, -push);
             }
 
-            tempY = height / 2;
+
+                String currcontent = contentInfo.get(index).getContent();
+                canvas.drawText(currcontent, width / 2, height / 2, paintGreen);
+
+                float tempY = height / 2;
+                for (int i = index - 1; i >= 0; i--) {
+
+                    String precontent = contentInfo.get(i).getContent();
+
+                    tempY = tempY - textHeight;
+
+                    if (tempY < 0) {
+                        break;
+                    }
+                    canvas.drawText(precontent, width / 2, tempY, paintWhite);
+
+                }
+
+                tempY = height / 2;
             for (int i = index + 1; i < contentInfo.size(); i++) {
                 String nextcontent = contentInfo.get(i).getContent();
 
@@ -120,8 +143,13 @@ public class ScrollContentView extends TextView {
                 int tempIndex = i - 1;
                 if (currentPosition >= contentInfo.get(tempIndex).getTimepoint()) {
                     index = tempIndex;
+
+                    timepoint=contentInfo.get(index).getTimepoint();
+                    sleeptime=contentInfo.get(index).getSleeptime();
                 }
 
+            }else {
+                index=i;
             }
 
         }

@@ -1,2 +1,3 @@
 include ':MediaApp', ':Media000', ':Media005', ':StartAllMediaPlayer', ':vitamio-sample', ':vitamio', ':StartLocalMediaPlayer', ':MediaPlayer001'
 
+include ':speechDemo'

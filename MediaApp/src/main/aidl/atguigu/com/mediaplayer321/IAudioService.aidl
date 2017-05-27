@@ -48,4 +48,6 @@ interface IAudioService {
 
         int getPlaymode();
         void setPlaymode(int playmode);
+
+        int getAudioSessionId();
 }
