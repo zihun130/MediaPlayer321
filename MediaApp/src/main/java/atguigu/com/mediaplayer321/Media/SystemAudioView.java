@@ -344,7 +344,6 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
             }
 
 
-
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -371,7 +370,6 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
         mVisualizer.setEnabled(true);
     }
 
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -379,8 +377,6 @@ public class SystemAudioView extends AppCompatActivity implements View.OnClickLi
             mVisualizer.release();
         }
     }
-
-
 
     @Override
     protected void onDestroy() {
