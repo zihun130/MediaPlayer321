@@ -1,9 +1,9 @@
 package atguigu.com.mediarecyclerview.Adapter;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 
 import java.util.List;
 
@@ -13,29 +13,34 @@ import atguigu.com.mediarecyclerview.domain.RecyclerViewInfo;
  * Created by sun on 2017/5/30.
  */
 
-public class RecyclerViewAdapter extends BaseAdapter {
-
+public class RecyclerViewAdapter extends RecyclerView.Adapter {
+    private static final int TYPE_RECYCLER_VIDEO = 0;
+    private Context context;
+    private List<RecyclerViewInfo.ListBean> list;
     public RecyclerViewAdapter(Context context, List<RecyclerViewInfo.ListBean> list) {
-
+        this.context=context;
+        this.list=list;
     }
 
     @Override
-    public int getCount() {
-        return 0;
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        return initViewHolder(viewType);
     }
 
-    @Override
-    public Object getItem(int position) {
+    private RecyclerView.ViewHolder initViewHolder(int itemviewType) {
+        RecyclerView.ViewHolder   viewHolder=null;
+        View convertView = null;
+
         return null;
     }
 
     @Override
-    public long getItemId(int position) {
-        return 0;
+    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int i) {
+
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        return null;
+    public int getItemCount() {
+        return list==null ? 0 : list.size();
     }
 }

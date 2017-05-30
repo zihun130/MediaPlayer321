@@ -2,10 +2,10 @@ package atguigu.com.mediarecyclerview.Pager;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -29,7 +29,7 @@ import atguigu.com.mediarecyclerview.domain.RecyclerViewInfo;
  */
 
 public class RecyclerViewPager extends BaseFragment {
-    private ListView lv_recycler_pager;
+    private RecyclerView lv_recycler_pager;
     private TextView recycler_dataerror;
     private ProgressBar recycler_progressbar;
     private RecyclerViewAdapter adapter;
@@ -42,7 +42,7 @@ public class RecyclerViewPager extends BaseFragment {
     @Override
     protected View initView() {
         View view = View.inflate(context, R.layout.fragment_recycler_pager, null);
-        lv_recycler_pager = (ListView) view.findViewById(R.id.lv_recycler_pager);
+        lv_recycler_pager = (RecyclerView) view.findViewById(R.id.lv_recycler_pager);
         recycler_dataerror = (TextView) view.findViewById(R.id.recycler_dataerror);
         recycler_progressbar = (ProgressBar) view.findViewById(R.id.recycler_progressbar);
         sp=context.getSharedPreferences("atguigu", Context.MODE_PRIVATE);
