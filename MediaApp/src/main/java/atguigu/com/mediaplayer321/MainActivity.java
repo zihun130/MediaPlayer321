@@ -3,6 +3,8 @@ package atguigu.com.mediaplayer321;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,6 +22,7 @@ import atguigu.com.mediaplayer321.Pager.LocalVideoPager;
 import atguigu.com.mediaplayer321.Pager.NetAudioPager;
 import atguigu.com.mediaplayer321.Pager.NetVideoPager;
 import atguigu.com.mediaplayer321.fragment.BaseFragment;
+import fm.jiecao.jcvideoplayer_lib.JCVideoPlayer;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -27,6 +30,11 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<BaseFragment> fragments;
     private int position;
     private Fragment tempFragment;
+
+
+    SensorManager sensorManager;
+    JCVideoPlayer.JCAutoFullscreenListener sensorEventListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +43,10 @@ public class MainActivity extends AppCompatActivity {
         initFragmnt();
         rg_main.setOnCheckedChangeListener(new MyOnCheckedChange());
         rg_main.check(R.id.rb_local_video);
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensorEventListener = new JCVideoPlayer.JCAutoFullscreenListener();
+
     }
 
     private void initFragmnt() {
@@ -142,4 +154,30 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onKeyDown(keyCode, event);
     }
+
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Sensor accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager.registerListener(sensorEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(sensorEventListener);
+        JCVideoPlayer.releaseAllVideos();
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        if (JCVideoPlayer.backPress()) {
+            return;
+        }
+        super.onBackPressed();
+    }
+
 }
