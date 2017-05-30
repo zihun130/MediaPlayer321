@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <com.cjj.MaterialRefreshLayout
-        android:id="@+id/jj_refresh"
+        android:id="@+id/recycler_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:isLoadMore="true"
@@ -14,7 +14,7 @@
         app:wave_show="true">
 
         <ListView
-            android:id="@+id/lv_net_audio_pager"
+            android:id="@+id/lv_recycler_pager"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
@@ -22,14 +22,14 @@
 
 
     <ProgressBar
-        android:id="@+id/audio_progressbar"
+        android:id="@+id/recycler_progressbar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true" />
 
 
     <TextView
-        android:id="@+id/tv_dataerror"
+        android:id="@+id/recycler_dataerror"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
