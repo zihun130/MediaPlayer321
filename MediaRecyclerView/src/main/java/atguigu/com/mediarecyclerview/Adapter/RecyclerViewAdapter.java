@@ -117,7 +117,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter {
             gifHolder.setData(list.get(position));
         } else {
             HtmlHolder htmlHolder = (HtmlHolder) viewHolder;
-            htmlHolder.setData(list.get(position));
         }
 
     }
@@ -289,6 +288,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter {
         public GifHolder(View itemView) {
             super(itemView);
             tvContext = (TextView) itemView.findViewById(R.id.tv_context);
+            ivImageGif = (ImageView) itemView.findViewById(R.id.iv_image_gif);
             imageOptions = new ImageOptions.Builder()
                     .setSize(ViewGroup.LayoutParams.WRAP_CONTENT, -2)
 //设置圆角

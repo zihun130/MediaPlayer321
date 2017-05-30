@@ -316,6 +316,7 @@ public class NetAudioAdapter extends BaseAdapter {
         public GifHolder(View convertView) {
             super(convertView);
             tvContext = (TextView) convertView.findViewById(R.id.tv_context);
+            ivImageGif = (ImageView) convertView.findViewById(R.id.iv_image_gif);
             imageOptions = new ImageOptions.Builder()
                     .setSize(ViewGroup.LayoutParams.WRAP_CONTENT, -2)
 //设置圆角
