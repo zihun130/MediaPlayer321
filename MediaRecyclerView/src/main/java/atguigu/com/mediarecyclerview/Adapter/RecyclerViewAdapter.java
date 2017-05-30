@@ -1,6 +1,7 @@
 package atguigu.com.mediarecyclerview.Adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import org.xutils.x;
 import java.util.List;
 
 import atguigu.com.mediarecyclerview.R;
+import atguigu.com.mediarecyclerview.ShowViewActivity;
 import atguigu.com.mediarecyclerview.domain.RecyclerViewInfo;
 import atguigu.com.mediarecyclerview.utils.Utils;
 import fm.jiecao.jcvideoplayer_lib.JCVideoPlayer;
@@ -132,6 +134,30 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter {
             tvShenheCaiNumber = (TextView) itemView.findViewById(R.id.tv_shenhe_cai_number);
             tvPostsNumber = (TextView) itemView.findViewById(R.id.tv_posts_number);
             llDownload = (LinearLayout) itemView.findViewById(R.id.ll_download);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    RecyclerViewInfo.ListBean listBean = list.get(getLayoutPosition());
+                    if(listBean!=null){
+                        Intent intent=new Intent(context, ShowViewActivity.class);
+                        if(listBean.getType().equals("image")){
+                            String url = listBean.getImage().getBig().get(0);
+                            intent.putExtra("url",url);
+                            context.startActivity(intent);
+                        }else if(listBean.getType().equals("gif")){
+                            String url = listBean.getGif().getImages().get(0);
+                            intent.putExtra("url",url);
+                            context.startActivity(intent);
+                        }
+                    }
+                }
+            });
+
+
+
+
+
         }
         public void setData(RecyclerViewInfo.ListBean mediaItem) {
             if (mediaItem.getU() != null && mediaItem.getU().getHeader() != null && mediaItem.getU().getHeader().get(0) != null) {
@@ -157,6 +183,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter {
             tvPostsNumber.setText(mediaItem.getForward() + "");
 
         }
+
 
     }
 
