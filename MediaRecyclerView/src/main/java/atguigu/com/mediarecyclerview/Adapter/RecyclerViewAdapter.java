@@ -26,10 +26,6 @@ import atguigu.com.mediarecyclerview.utils.Utils;
 import fm.jiecao.jcvideoplayer_lib.JCVideoPlayer;
 import fm.jiecao.jcvideoplayer_lib.JCVideoPlayerStandard;
 
-/**
- * Created by sun on 2017/5/30.
- */
-
 public class RecyclerViewAdapter extends RecyclerView.Adapter {
     private static final int TYPE_RECYCLER_VIDEO = 0;
     private static final int TYPE_RECYCLER_IMAGE = 1;
@@ -43,18 +39,37 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter {
         this.list=list;
     }
 
+
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        return initViewHolder(viewType);
+    public int getItemViewType(int position) {
+        int itemViewType = -1;
+        RecyclerViewInfo.ListBean listBean = list.get(position);
+
+        String type = listBean.getType();
+        if ("video".equals(type)) {
+            itemViewType = TYPE_RECYCLER_VIDEO;
+        } else if ("image".equals(type)) {
+            itemViewType = TYPE_RECYCLER_IMAGE;
+        } else if ("text".equals(type)) {
+            itemViewType = TYPE_RECYCLER_TEXT;
+        } else if ("gif".equals(type)) {
+            itemViewType = TYPE_RECYCLER_GIF;
+        } else if ("html".equals(type)) {
+            itemViewType = TYPE_RECYCLER_HTML;
+        }
+
+        return itemViewType;
     }
 
-    private RecyclerView.ViewHolder initViewHolder(int itemviewType) {
-        RecyclerView.ViewHolder   viewHolder=null;
-        View convertView = null;
-        switch (itemviewType) {
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        RecyclerView.ViewHolder viewHolder = null;
+        View convertView ;
+
+        switch (viewType) {
             case TYPE_RECYCLER_VIDEO :
                 convertView = View.inflate(context, R.layout.videoholder_item, null);
-                viewHolder = new VideoHolder(convertView);
+                viewHolder=new VideoHolder(convertView);
 
                 break;
             case TYPE_RECYCLER_IMAGE :
@@ -78,9 +93,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter {
 
                 break;
         }
-
-        return null;
+        return viewHolder;
     }
+
+
+
+
+
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
@@ -101,11 +120,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter {
             htmlHolder.setData(list.get(position));
         }
 
-    }
-
-    @Override
-    public int getItemCount() {
-        return list==null ? 0 : list.size();
     }
 
     class BaseViewHolder extends RecyclerView.ViewHolder{
@@ -153,9 +167,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter {
                     }
                 }
             });
-
-
-
 
 
         }
@@ -221,7 +232,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter {
                     "");
 
             if (setUp) {
-            Glide.with(context).load(mediaItem.getVideo().getThumbnail().get(0)).into(jcvVideoplayer.thumbImageView);
+                Glide.with(context).load(mediaItem.getVideo().getThumbnail().get(0)).into(jcvVideoplayer.thumbImageView);
             }
             tvPlayNums.setText(mediaItem.getVideo().getPlaycount() + "次播放");
             tvVideoDuration.setText(utils.stringForTime(mediaItem.getVideo().getDuration() * 1000) + "");
@@ -243,7 +254,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter {
             super.setData(mediaItem);
 
             tvContext.setText(mediaItem.getText() + "_" + mediaItem.getType());
-           //图片特有的
+            //图片特有的
             ivImageIcon.setImageResource(R.drawable.bg_item);
             if (mediaItem.getImage() != null && mediaItem.getImage() != null && mediaItem.getImage().getSmall() != null) {
                 Glide.with(context).load(mediaItem.getImage().getDownload_url().get(0)).placeholder(R.drawable.bg_item).error(R.drawable.bg_item).diskCacheStrategy(DiskCacheStrategy.ALL).into(ivImageIcon);
@@ -316,5 +327,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter {
 
         }
     }
+
+
+
+
+    @Override
+    public int getItemCount() {
+        return list==null ? 0 : list.size();
+    }
+
+
 
 }

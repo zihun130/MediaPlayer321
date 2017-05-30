@@ -2,6 +2,7 @@ package atguigu.com.mediarecyclerview.Pager;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
@@ -124,6 +125,9 @@ public class RecyclerViewPager extends BaseFragment {
 
                 adapter = new RecyclerViewAdapter(context, list);
                 lv_recycler_pager.setAdapter(adapter);
+
+                //设置布局管理器
+                lv_recycler_pager.setLayoutManager(new LinearLayoutManager(context,LinearLayoutManager.VERTICAL,false));
 
             } else {
                 recycler_dataerror.setVisibility(View.VISIBLE);
